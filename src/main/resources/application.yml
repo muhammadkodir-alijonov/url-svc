@@ -132,7 +132,7 @@ quarkus:
 # APPLICATION-SPECIFIC CONFIG
 # ============================================
 app:
-  base-url: https://short.uz
+  base-url: https://shortener.by
   short-code:
     length: 6
     max-attempts: 10

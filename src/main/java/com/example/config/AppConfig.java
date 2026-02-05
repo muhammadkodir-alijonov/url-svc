@@ -15,7 +15,7 @@ public interface AppConfig {
      * Base URL for short links
      *
      * application.yml:
-     *   app.base-url: https://short.uz
+     *   app.base-url: https://shortener.by
      */
     @WithName("base-url")
     String baseUrl();

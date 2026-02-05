@@ -41,7 +41,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
                         description = "Local APISIX gateway"
                 ),
                 @Server(
-                        url = "https://api.short.uz",
+                        url = "https://api.shortener.by",
                         description = "Production server"
                 )
         },

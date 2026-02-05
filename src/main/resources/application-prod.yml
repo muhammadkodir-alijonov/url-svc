@@ -34,4 +34,4 @@ mp:
         serviceUrl: pulsar://pulsar:6650
 
 app:
-  base-url: https://short.uz
+  base-url: https://shortener.by
