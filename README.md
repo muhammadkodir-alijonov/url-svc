@@ -1,8 +1,83 @@
-# url-svc
+# URL Shortener Service
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+A production-ready URL shortening service built with Quarkus, featuring:
+- 🚀 High-performance reactive architecture
+- 🔐 OAuth2/OIDC authentication with Keycloak
+- 💾 PostgreSQL database with Hibernate ORM
+- ⚡ Redis/Valkey caching
+- 📨 Apache Pulsar message streaming
+- 🎯 RESTful API with OpenAPI/Swagger
+- ☸️ Kubernetes-ready deployment
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## 🏗️ Architecture
+
+- **Framework:** Quarkus 3.x
+- **Database:** PostgreSQL 16
+- **Cache:** Valkey 7.2 (Redis-compatible)
+- **Message Broker:** Apache Pulsar 3.1
+- **Auth:** Keycloak 23.0
+- **Deployment:** Kubernetes (Docker Desktop)
+
+## 📚 Documentation
+
+- [Kubernetes Deployment Guide](docs/KUBERNETES_DEPLOYMENT.md)
+- [API Documentation](http://localhost:8080/q/swagger-ui) (when running)
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Java 17+
+- Docker Desktop with Kubernetes enabled
+- kubectl CLI
+- Maven 3.8+ (or use `./mvnw`)
+
+### 1. Deploy Infrastructure
+
+**Windows:**
+```powershell
+.\deploy-k8s.ps1
+```
+
+**Linux/Mac:**
+```bash
+./deploy-k8s.sh
+```
+
+### 2. Wait for Pods
+
+```bash
+kubectl get pods -n url-shortener -w
+```
+
+Wait until all pods are `Running`.
+
+### 3. Run Application
+
+```bash
+./mvnw quarkus:dev -Dquarkus.profile=dev
+```
+
+### 4. Access Services
+
+- **API:** http://localhost:8080
+- **Swagger UI:** http://localhost:8080/q/swagger-ui
+- **Dev UI:** http://localhost:8080/q/dev
+- **Keycloak:** http://localhost:30180
+
+## 🌐 NodePort Services
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| PostgreSQL | 30432 | Database |
+| Valkey | 30379 | Cache |
+| Pulsar | 30650 | Message Broker |
+| Pulsar Admin | 30081 | Admin UI |
+| Keycloak | 30180 | Auth Server |
+| Vault | 30200 | Secrets Management |
+| APISIX Gateway | 30900 | API Gateway |
+| APISIX Admin | 30901 | Admin API |
+| APISIX Dashboard | 30910 | Web UI |
 
 ## Running the application in dev mode
 

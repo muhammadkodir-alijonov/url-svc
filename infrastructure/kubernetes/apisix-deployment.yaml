@@ -1,0 +1,218 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-config
+  namespace: url-shortener
+data:
+  config.yaml: |
+    apisix:
+      node_listen: 9080
+      enable_admin: true
+      enable_admin_cors: true
+      admin_key:
+        - name: "admin"
+          key: admin-api-key
+          role: admin
+    
+    deployment:
+      role: traditional
+      role_traditional:
+        config_provider: etcd
+      
+      etcd:
+        host:
+          - "http://etcd:2379"
+        prefix: "/apisix"
+        timeout: 30
+    
+    plugin_attr:
+      prometheus:
+        export_addr:
+          ip: "0.0.0.0"
+          port: 9091
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: url-shortener
+  labels:
+    app: etcd
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2379
+      targetPort: 2379
+      protocol: TCP
+      name: etcd-client
+  selector:
+    app: etcd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          image: bitnami/etcd:3.5
+          env:
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes"
+            - name: ETCD_ADVERTISE_CLIENT_URLS
+              value: "http://etcd:2379"
+          ports:
+            - containerPort: 2379
+              name: client
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-gateway
+  namespace: url-shortener
+  labels:
+    app: apisix
+spec:
+  type: NodePort
+  ports:
+    - port: 9080
+      targetPort: 9080
+      nodePort: 30900
+      protocol: TCP
+      name: http
+    - port: 9180
+      targetPort: 9180
+      nodePort: 30901
+      protocol: TCP
+      name: admin
+    - port: 9091
+      targetPort: 9091
+      nodePort: 30902
+      protocol: TCP
+      name: metrics
+  selector:
+    app: apisix
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-admin
+  namespace: url-shortener
+  labels:
+    app: apisix
+spec:
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 30910
+      protocol: TCP
+      name: dashboard
+  selector:
+    app: apisix-dashboard
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix
+  template:
+    metadata:
+      labels:
+        app: apisix
+    spec:
+      containers:
+        - name: apisix
+          image: apache/apisix:3.7.0-debian
+          ports:
+            - containerPort: 9080
+              name: http
+            - containerPort: 9180
+              name: admin
+            - containerPort: 9091
+              name: metrics
+          env:
+            - name: APISIX_STAND_ALONE
+              value: "false"
+          volumeMounts:
+            - name: apisix-config
+              mountPath: /usr/local/apisix/conf/config.yaml
+              subPath: config.yaml
+          livenessProbe:
+            httpGet:
+              path: /apisix/status
+              port: 9080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /apisix/status
+              port: 9080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: apisix-config
+          configMap:
+            name: apisix-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix-dashboard
+  namespace: url-shortener
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix-dashboard
+  template:
+    metadata:
+      labels:
+        app: apisix-dashboard
+    spec:
+      containers:
+        - name: apisix-dashboard
+          image: apache/apisix-dashboard:3.0.1-alpine
+          ports:
+            - containerPort: 9000
+              name: dashboard
+          env:
+            - name: APISIX_ADMIN_API_URL
+              value: "http://apisix-gateway:9180/apisix/admin"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
