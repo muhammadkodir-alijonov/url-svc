@@ -21,6 +21,8 @@ A production-ready URL shortening service built with Quarkus, featuring:
 ## 📚 Documentation
 
 - [Kubernetes Deployment Guide](docs/KUBERNETES_DEPLOYMENT.md)
+- [Vault & APISIX Setup](docs/VAULT_APISIX_SETUP.md)
+- [Scripts Usage Guide](docs/SCRIPTS_USAGE.md) ← **Script management tips**
 - [API Documentation](http://localhost:8080/q/swagger-ui) (when running)
 
 ## 🚀 Quick Start

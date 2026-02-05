@@ -22,3 +22,7 @@ else
     echo ""
     echo "Operation cancelled."
 fi
+
+echo ""
+read -p "Press ENTER to exit..." dummy
+

@@ -97,3 +97,8 @@ echo "   Describe pod:      kubectl describe pod POD_NAME -n url-shortener"
 echo "   View logs:         kubectl logs POD_NAME -n url-shortener"
 echo "   Shell into pod:    kubectl exec -it POD_NAME -n url-shortener -- /bin/sh"
 echo "   Delete all:        kubectl delete namespace url-shortener"
+
+echo ""
+echo "================================"
+read -p "Press ENTER to exit..." dummy
+
