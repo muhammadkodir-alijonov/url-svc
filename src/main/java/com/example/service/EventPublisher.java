@@ -51,7 +51,6 @@ public class EventPublisher {
             LOG.info("Pulsar producer initialized successfully");
         } catch (PulsarClientException e) {
             LOG.error("Failed to initialize Pulsar client", e);
-            // Don't throw - let the service start even if Pulsar is down
         }
     }
 

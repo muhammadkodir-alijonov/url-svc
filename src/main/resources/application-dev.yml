@@ -1,29 +1,68 @@
-# Development-specific configuration
+# ============================================
+# DEVELOPMENT CONFIGURATION
+# ============================================
+# Infrastructure runs in Kubernetes (Docker Desktop)
+# Application runs locally with quarkus:dev
+#
+# Kubernetes NodePort mappings:
+#   PostgreSQL: 30432
+#   Valkey:     30379
+#   Pulsar:     30650
+#   Keycloak:   30180
+# ============================================
 
 quarkus:
+  # Database (Kubernetes - NodePort 30432)
   datasource:
     jdbc:
-      url: jdbc:postgresql://localhost:5432/url_shortener
+      url: jdbc:postgresql://localhost:30432/url_shortener
+    username: admin
+    password: admin123
 
+  # Redis/Valkey (Kubernetes - NodePort 30379)
   redis:
-    hosts: redis://localhost:6379
+    hosts: redis://localhost:30379
 
+  # Pulsar (Kubernetes - NodePort 30650)
+  pulsar:
+    client:
+      serviceUrl: pulsar://localhost:30650
+
+  # Keycloak (Kubernetes - NodePort 30180)
   oidc:
-    auth-server-url: http://localhost:8180/realms/url-shortener
+    auth-server-url: http://localhost:30180/realms/url-shortener
+    client-id: shortener-backend
+    credentials:
+      secret: "**CHANGE_IN_PRODUCTION**"
     tls:
       verification: none
 
+  # Development Logging
   log:
-    level: DEBUG
+    level: INFO
     category:
-      "dev.shortener":
-        level: TRACE
+      "com.example":
+        level: DEBUG
+      "io.quarkus":
+        level: INFO
+      "org.hibernate":
+        level: INFO
+    console:
+      enable: true
+      format: "%d{HH:mm:ss} %-5p [%c{2.}] (%t) %s%e%n"
+      color: true
 
-mp:
-  messaging:
-    outgoing:
-      click-events:
-        serviceUrl: pulsar://localhost:6650
+  # Hot Reload
+  live-reload:
+    password: dev
 
+  # Swagger UI (enabled in dev)
+  swagger-ui:
+    always-include: true
+    path: /swagger-ui
+
+# Application Config
 app:
   base-url: http://localhost:3000
+  pulsar:
+    topic: persistent://public/default/click-events
