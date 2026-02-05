@@ -2,6 +2,7 @@ package com.example.service;
 
 import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 import io.quarkus.redis.datasource.value.ReactiveValueCommands;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -12,6 +13,12 @@ import java.util.Optional;
 
 @ApplicationScoped
 public class CacheService {
+
+    @Inject
+    ValueCommands<String, String> stringCommands;
+
+    @Inject
+    ValueCommands<String, Long> longCommands;
 
     private static final Logger LOG = Logger.getLogger(CacheService.class);
 
@@ -86,12 +93,11 @@ public class CacheService {
     /**
      * Increment counter
      */
-    public Long increment(String key) {
+    public void increment(String key) {
         try {
-            return valueCommands.incr(key).await().indefinitely();
+            valueCommands.incr(key).await().indefinitely();
         } catch (Exception e) {
             LOG.errorf("Cache INCR error for key %s: %s", key, e.getMessage());
-            return 0L;
         }
     }
 
@@ -133,5 +139,17 @@ public class CacheService {
      */
     public static String analyticsCacheKey(String shortCode, String metric) {
         return "analytics:" + shortCode + ":" + metric;
+    }
+    /**
+     * Example method to cache a URL
+     */
+    public void cacheUrl(String key, String url) {
+        stringCommands.set(key, url);
+    }
+    /**
+     * Example method to increment a counter
+     */
+    public void incrementCounter(String key) {
+        longCommands.incr(key);
     }
 }

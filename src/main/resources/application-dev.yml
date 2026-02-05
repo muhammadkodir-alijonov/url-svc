@@ -1,0 +1,29 @@
+# Development-specific configuration
+
+quarkus:
+  datasource:
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/url_shortener
+
+  redis:
+    hosts: redis://localhost:6379
+
+  oidc:
+    auth-server-url: http://localhost:8180/realms/url-shortener
+    tls:
+      verification: none
+
+  log:
+    level: DEBUG
+    category:
+      "dev.shortener":
+        level: TRACE
+
+mp:
+  messaging:
+    outgoing:
+      click-events:
+        serviceUrl: pulsar://localhost:6650
+
+app:
+  base-url: http://localhost:3000

@@ -1,5 +1,7 @@
 package com.example.service;
 
+import com.example.config.AppConfig;
+import com.example.config.SecurityConfig;
 import com.example.domain.Url;
 import com.example.domain.User;
 import com.example.dto.*;
@@ -38,6 +40,9 @@ public class UrlService {
 
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    AppConfig appConfig;
 
     /**
      * Shorten URL
@@ -288,7 +293,7 @@ public class UrlService {
      * Build short URL
      */
     private String buildShortUrl(String shortCode) {
-        return BASE_URL + "/" + shortCode;
+        return appConfig.baseUrl() + "/" + shortCode;
     }
 
     /**
@@ -317,5 +322,11 @@ public class UrlService {
                 .updatedAt(url.updatedAt)
                 .lastAccessedAt(url.lastAccessedAt)
                 .build();
+    }
+    /**
+     * Check password
+     */
+    public boolean checkPassword(String input, String hash) {
+        return SecurityConfig.SecurityHelper.verifyPassword(input, hash);
     }
 }
