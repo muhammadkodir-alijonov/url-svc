@@ -1,15 +1,13 @@
 package com.example.service;
 
-import io.quarkus.redis.client.RedisClient;
-import io.quarkus.redis.client.reactive.ReactiveRedisClient;
-import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.redis.client.Response;
+import io.quarkus.redis.datasource.ReactiveRedisDataSource;
+import io.quarkus.redis.datasource.value.ReactiveValueCommands;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -18,17 +16,24 @@ public class CacheService {
     private static final Logger LOG = Logger.getLogger(CacheService.class);
 
     @Inject
-    ReactiveRedisClient redisClient;
+    ReactiveRedisDataSource redisDataSource;
+
+    private ReactiveValueCommands<String, String> valueCommands;
+
+    @PostConstruct
+    void init() {
+        valueCommands = redisDataSource.value(String.class, String.class);
+    }
 
     /**
      * Get value from cache
      */
     public Optional<String> get(String key) {
         try {
-            Response response = redisClient.get(key).await().indefinitely();
-            if (response != null) {
+            String value = valueCommands.get(key).await().indefinitely();
+            if (value != null) {
                 LOG.debugf("Cache HIT: %s", key);
-                return Optional.of(response.toString());
+                return Optional.of(value);
             } else {
                 LOG.debugf("Cache MISS: %s", key);
                 return Optional.empty();
@@ -44,7 +49,7 @@ public class CacheService {
      */
     public void set(String key, String value, Duration ttl) {
         try {
-            redisClient.setex(key, String.valueOf(ttl.getSeconds()), value)
+            valueCommands.setex(key, ttl.getSeconds(), value)
                     .await().indefinitely();
             LOG.debugf("Cache SET: %s (TTL: %d seconds)", key, ttl.getSeconds());
         } catch (Exception e) {
@@ -57,7 +62,7 @@ public class CacheService {
      */
     public void set(String key, String value) {
         try {
-            redisClient.set(List.of(key, value))
+            valueCommands.set(key, value)
                     .await().indefinitely();
             LOG.debugf("Cache SET (no TTL): %s", key);
         } catch (Exception e) {
@@ -70,7 +75,7 @@ public class CacheService {
      */
     public void delete(String key) {
         try {
-            redisClient.del(List.of(key))
+            redisDataSource.key().del(key)
                     .await().indefinitely();
             LOG.debugf("Cache DELETE: %s", key);
         } catch (Exception e) {
@@ -83,8 +88,7 @@ public class CacheService {
      */
     public Long increment(String key) {
         try {
-            Response response = redisClient.incr(key).await().indefinitely();
-            return response != null ? response.toLong() : 0L;
+            return valueCommands.incr(key).await().indefinitely();
         } catch (Exception e) {
             LOG.errorf("Cache INCR error for key %s: %s", key, e.getMessage());
             return 0L;
@@ -96,8 +100,7 @@ public class CacheService {
      */
     public boolean exists(String key) {
         try {
-            Response response = redisClient.exists(List.of(key)).await().indefinitely();
-            return response != null && response.toInteger() > 0;
+            return redisDataSource.key().exists(key).await().indefinitely();
         } catch (Exception e) {
             LOG.errorf("Cache EXISTS error for key %s: %s", key, e.getMessage());
             return false;

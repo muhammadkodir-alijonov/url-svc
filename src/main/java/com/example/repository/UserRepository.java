@@ -19,7 +19,7 @@ public class UserRepository implements PanacheRepository<User> {
     /**
      * Find user by UUID
      */
-    public Optional<User> findById(UUID userId) {
+    public Optional<User>findById(UUID userId) {
         return find("id", userId).firstResultOptional();
     }
 

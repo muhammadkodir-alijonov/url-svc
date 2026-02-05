@@ -2,6 +2,10 @@ package com.example.service;
 
 import com.example.domain.Url;
 import com.example.dto.ClickEvent;
+import com.example.exception.InvalidPasswordException;
+import com.example.exception.PasswordRequiredException;
+import com.example.exception.UrlExpiredException;
+import com.example.exception.UrlNotFoundException;
 import com.example.repository.UrlRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -64,6 +68,23 @@ public class RedirectService {
         Url url = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(() -> new UrlNotFoundException("Short URL not found: " + shortCode));
 
+        if (!url.isActive) {
+            throw new UrlNotFoundException("This link has been disabled");
+        }
+
+        if (url.isExpired()) {
+            throw new UrlExpiredException("This link has expired");
+        }
+
+        if (url.hasPassword()) {
+            if (password == null || password.isEmpty()) {
+                throw new PasswordRequiredException("Password required");
+            }
+
+            if (!BCrypt.checkpw(password, url.passwordHash)) {
+                throw new InvalidPasswordException("Incorrect password");
+            }
+        }
         // STEP 3: Validate URL
         validateUrl(url, password);
 

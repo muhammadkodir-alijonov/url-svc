@@ -2,9 +2,8 @@ package com.example.service;
 
 import com.example.domain.Url;
 import com.example.domain.User;
-import com.example.dto.ShortenRequest;
-import com.example.dto.ShortenResponse;
-import com.example.dto.UrlResponse;
+import com.example.dto.*;
+import com.example.exception.*;
 import com.example.repository.UrlRepository;
 import com.example.repository.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,11 +48,8 @@ public class UrlService {
 
         // 1. Get current user
         UUID userId = getCurrentUserId();
-        User user = userRepository.findById(userId);
-
-        if (user == null) {
-            throw new UserNotFoundException("User not found");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // 2. Check user limits
         if (!user.canCreateLink()) {
@@ -149,7 +145,6 @@ public class UrlService {
 
         Url url = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(() -> new UrlNotFoundException("URL not found: " + shortCode));
-
         // Check ownership
         UUID currentUserId = getCurrentUserId();
         if (!url.userId.equals(currentUserId)) {
@@ -265,7 +260,8 @@ public class UrlService {
         cacheService.delete(CacheService.urlCacheKey(shortCode));
 
         // Update user stats
-        User user = userRepository.findById(currentUserId);
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));;
         if (user != null) {
             user.decrementLinksCreated();
             userRepository.persist(user);
