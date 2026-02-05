@@ -36,6 +36,11 @@ public interface AppConfig {
     RateLimitConfig rateLimit();
 
     /**
+     * Pulsar configuration
+     */
+    PulsarConfig pulsar();
+
+    /**
      * Short code settings
      */
     interface ShortCodeConfig {
@@ -83,5 +88,17 @@ public interface AppConfig {
          * Default: 500
          */
         int redirect();
+    }
+
+    /**
+     * Pulsar settings
+     */
+    interface PulsarConfig {
+
+        /**
+         * Pulsar topic name for click events
+         * Default: persistent://public/default/click-events
+         */
+        String topic();
     }
 }

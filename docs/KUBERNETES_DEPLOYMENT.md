@@ -249,6 +249,21 @@ kubectl get events -n url-shortener --sort-by='.lastTimestamp'
 ### Issue: Keycloak not starting
 **Solution:** Check logs: `kubectl logs -f deployment/keycloak -n url-shortener`
 
+### Issue: Quarkus trying to start Testcontainers
+**Error:** `Can't get Docker image: postgres:17` or `DevServices trying to start`
+
+**Solution:** Dev Services is now disabled in `application-dev.yml`:
+```yaml
+quarkus:
+  devservices:
+    enabled: false
+```
+
+Make sure you:
+1. Deploy Kubernetes infrastructure first: `./deploy-k8s.sh`
+2. Wait for all pods to be Running
+3. Then run: `./mvnw quarkus:dev -Dquarkus.profile=dev`
+
 ---
 
 **Need help?** Run `./check-k8s-status.sh` or `.\check-k8s-status.ps1` to see detailed status.
