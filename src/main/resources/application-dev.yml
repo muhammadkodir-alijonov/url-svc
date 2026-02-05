@@ -33,7 +33,7 @@ quarkus:
     auth-server-url: http://localhost:30180/realms/url-shortener
     client-id: shortener-backend
     credentials:
-      secret: "**CHANGE_IN_PRODUCTION**"
+      secret: "**my sec keyyyy**"
     tls:
       verification: none
 

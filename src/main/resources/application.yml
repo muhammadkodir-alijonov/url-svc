@@ -50,8 +50,7 @@ quarkus:
   # ============================================
   pulsar:
     client:
-      serviceUrl: pulsar://localhost:6650
-      # or for Docker: pulsar://pulsar:6650
+      serviceUrl: pulsar://pulsar:6650
 
 
   # ============================================
