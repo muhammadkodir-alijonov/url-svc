@@ -64,19 +64,6 @@ spec:
       labels:
         app: etcd
     spec:
-      initContainers:
-        - name: wait-for-etcd
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              echo "Waiting for ETCD to be ready..."
-              until nc -z etcd 2379; do
-                echo "ETCD is unavailable - sleeping"
-                sleep 2
-              done
-              echo "ETCD is up - starting APISIX"
       containers:
         - name: etcd
           image: quay.io/coreos/etcd:v3.5.11
@@ -230,6 +217,27 @@ spec:
           configMap:
             name: apisix-config
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-dashboard-config
+  namespace: url-shortener
+data:
+  conf.yaml: |
+    conf:
+      listen:
+        host: 0.0.0.0
+        port: 9000
+      etcd:
+        endpoints:
+          - http://etcd:2379
+      log:
+        error_log:
+          level: warn
+          file_path: /dev/stderr
+        access_log:
+          file_path: /dev/stdout
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -245,15 +253,29 @@ spec:
       labels:
         app: apisix-dashboard
     spec:
+      initContainers:
+        - name: wait-for-etcd
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for ETCD to be ready..."
+              until nc -z etcd 2379; do
+                echo "ETCD is unavailable - sleeping"
+                sleep 2
+              done
+              echo "ETCD is ready - starting Dashboard"
       containers:
         - name: apisix-dashboard
           image: apache/apisix-dashboard:3.0.1-alpine
           ports:
             - containerPort: 9000
               name: dashboard
-          env:
-            - name: APISIX_ADMIN_API_URL
-              value: "http://apisix-gateway:9180/apisix/admin"
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
+              subPath: conf.yaml
           resources:
             requests:
               memory: "128Mi"
@@ -261,3 +283,7 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
+      volumes:
+        - name: dashboard-config
+          configMap:
+            name: apisix-dashboard-config
