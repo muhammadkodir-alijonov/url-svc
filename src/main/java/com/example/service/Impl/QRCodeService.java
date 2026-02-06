@@ -1,5 +1,6 @@
-package com.example.service;
+package com.example.service.Impl;
 
+import com.example.service.IQRCodeService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -11,8 +12,11 @@ import org.jboss.logging.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * Implementation of QR Code generation operations
+ */
 @ApplicationScoped
-public class QRCodeService {
+public class QRCodeService implements IQRCodeService {
 
     private static final Logger LOG = Logger.getLogger(QRCodeService.class);
 

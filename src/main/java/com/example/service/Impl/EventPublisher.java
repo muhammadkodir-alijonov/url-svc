@@ -1,6 +1,8 @@
-package com.example.service;
+package com.example.service.Impl;
 
+import com.example.domain.Url;
 import com.example.dto.ClickEvent;
+import com.example.service.IEventPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -16,8 +18,11 @@ import org.jboss.logging.Logger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Implementation of event publishing operations using Apache Pulsar
+ */
 @ApplicationScoped
-public class EventPublisher {
+public class EventPublisher implements IEventPublisher {
 
     private static final Logger LOG = Logger.getLogger(EventPublisher.class);
 
@@ -110,5 +115,25 @@ public class EventPublisher {
      */
     public boolean isConnected() {
         return producer != null && producer.isConnected();
+    }
+
+    @Override
+    public void publishUrlCreated(Url url) {
+
+    }
+
+    @Override
+    public void publishUrlAccessed(Url url, String userAgent, String ipAddress) {
+
+    }
+
+    @Override
+    public void publishUrlUpdated(Url url) {
+
+    }
+
+    @Override
+    public void publishUrlDeleted(String shortCode, String userId) {
+
     }
 }

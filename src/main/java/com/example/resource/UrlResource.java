@@ -1,8 +1,8 @@
 package com.example.resource;
 
 import com.example.dto.*;
-import com.example.service.QRCodeService;
-import com.example.service.UrlService;
+import com.example.service.IQRCodeService;
+import com.example.service.IUrlService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -27,10 +27,10 @@ public class UrlResource {
     private static final Logger LOG = Logger.getLogger(UrlResource.class);
 
     @Inject
-    UrlService urlService;
+    IUrlService urlService;
 
     @Inject
-    QRCodeService qrCodeService;
+    IQRCodeService qrCodeService;
 
     /**
      * Shorten URL
@@ -84,7 +84,7 @@ public class UrlResource {
         LOG.debugf("List URLs: page=%d, size=%d, sortBy=%s, order=%s",
                 page, size, sortBy, order);
 
-        UrlListResponse response = urlService.listUrls(page, size, sortBy, order);
+        UrlListResponse response = urlService.listUrls(page, size, sortBy);
 
         return Response.ok(response).build();
     }

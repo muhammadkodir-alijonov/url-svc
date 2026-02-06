@@ -1,28 +1,37 @@
-package com.example.service;
+package com.example.service.Impl;
 
+import com.example.service.ICacheService;
 import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 import io.quarkus.redis.datasource.value.ReactiveValueCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
+import io.smallrye.mutiny.Uni;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import org.jboss.logging.Logger;
 
 import java.time.Duration;
 import java.util.Optional;
 
+/**
+ * Implementation of Redis caching operations
+ */
 @ApplicationScoped
-public class CacheService {
+public class CacheService implements ICacheService {
 
     @Inject
+    @Named("stringCommands")
     ValueCommands<String, String> stringCommands;
 
     @Inject
+    @Named("longCommands")
     ValueCommands<String, Long> longCommands;
 
     private static final Logger LOG = Logger.getLogger(CacheService.class);
 
     @Inject
+    @Named("reactive")
     ReactiveRedisDataSource redisDataSource;
 
     private ReactiveValueCommands<String, String> valueCommands;
@@ -30,6 +39,59 @@ public class CacheService {
     @PostConstruct
     void init() {
         valueCommands = redisDataSource.value(String.class, String.class);
+    }
+
+    @Override
+    public Uni<String> getOriginalUrl(String shortCode) {
+        String key = urlCacheKey(shortCode);
+        return valueCommands.get(key)
+                .onItem().ifNotNull().transform(url -> {
+                    LOG.debugf("Cache HIT for short code: %s", shortCode);
+                    return url;
+                })
+                .onItem().ifNull().continueWith(() -> {
+                    LOG.debugf("Cache MISS for short code: %s", shortCode);
+                    return null;
+                });
+    }
+
+    @Override
+    public Uni<Void> cacheOriginalUrl(String shortCode, String originalUrl, long ttlSeconds) {
+        String key = urlCacheKey(shortCode);
+        return valueCommands.setex(key, ttlSeconds, originalUrl)
+                .replaceWithVoid()
+                .invoke(() -> LOG.debugf("Cached URL: %s -> %s (TTL: %d)", shortCode, originalUrl, ttlSeconds));
+    }
+
+    @Override
+    public Uni<Void> invalidateCache(String shortCode) {
+        String key = urlCacheKey(shortCode);
+        return redisDataSource.key().del(key)
+                .replaceWithVoid()
+                .invoke(() -> LOG.debugf("Invalidated cache for: %s", shortCode));
+    }
+
+    @Override
+    public Uni<Boolean> isRateLimitExceeded(String key, int limit, long windowSeconds) {
+        String rateLimitKey = "ratelimit:" + key;
+        return redisDataSource.value(String.class, Long.class)
+                .get(rateLimitKey)
+                .onItem().transformToUni(count -> {
+                    if (count == null) {
+                        // First request - set counter to 1
+                        return redisDataSource.value(String.class, Long.class)
+                                .setex(rateLimitKey, windowSeconds, 1L)
+                                .replaceWith(false);
+                    } else if (count >= limit) {
+                        // Rate limit exceeded
+                        return Uni.createFrom().item(true);
+                    } else {
+                        // Increment counter
+                        return redisDataSource.value(String.class, Long.class)
+                                .incr(rateLimitKey)
+                                .replaceWith(false);
+                    }
+                });
     }
 
     /**

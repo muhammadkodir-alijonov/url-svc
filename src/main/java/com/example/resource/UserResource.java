@@ -1,7 +1,9 @@
 package com.example.resource;
 
 import com.example.domain.User;
+import com.example.dto.UserProfileResponse;
 import com.example.repository.UserRepository;
+import com.example.service.IUserService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -31,6 +33,8 @@ public class UserResource {
     @Inject
     JsonWebToken jwt;
 
+    @Inject
+    IUserService userService;
     /**
      * Sync user from Keycloak to local database
      *
@@ -109,9 +113,11 @@ public class UserResource {
     public Response getCurrentUser() {
         String keycloakId = jwt.getSubject();
 
-        User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
+        LOG.debugf("Get current user request for keycloakId: %s", keycloakId);
 
-        return Response.ok(user).build();
+        // Call service layer
+        UserProfileResponse profile = userService.getCurrentUserProfile(keycloakId);
+
+        return Response.ok(profile).build();
     }
 }

@@ -5,7 +5,7 @@ import com.example.dto.AuthRequest;
 import com.example.dto.AuthResponse;
 import com.example.dto.UserProfileResponse;
 import com.example.repository.UserRepository;
-import com.example.service.KeycloakService;
+import com.example.service.IKeycloakService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -31,7 +31,7 @@ public class AuthResource {
     private static final Logger LOG = Logger.getLogger(AuthResource.class);
 
     @Inject
-    KeycloakService keycloakService;
+    IKeycloakService keycloakService;
 
     @Inject
     UserRepository userRepository;
@@ -91,7 +91,17 @@ public class AuthResource {
                     .build();
 
         } catch (WebApplicationException e) {
-            throw e;
+            // Handle specific HTTP errors from Keycloak
+            if (e.getResponse().getStatus() == Response.Status.CONFLICT.getStatusCode()) {
+                LOG.warnf("User already exists: %s", request.username);
+                return Response.status(Response.Status.CONFLICT)
+                        .entity(new ErrorResponse("User with this username or email already exists"))
+                        .build();
+            }
+            LOG.errorf(e, "Registration failed for user: %s", request.username);
+            return Response.status(e.getResponse().getStatus())
+                    .entity(new ErrorResponse(e.getMessage()))
+                    .build();
         } catch (Exception e) {
             LOG.errorf(e, "Registration failed for user: %s", request.username);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

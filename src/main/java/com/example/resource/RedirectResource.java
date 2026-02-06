@@ -1,6 +1,6 @@
 package com.example.resource;
 
-import com.example.service.RedirectService;
+import com.example.service.Impl.RedirectService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

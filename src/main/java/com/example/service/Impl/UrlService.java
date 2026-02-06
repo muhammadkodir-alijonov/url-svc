@@ -1,4 +1,4 @@
-package com.example.service;
+package com.example.service.Impl;
 
 import com.example.config.AppConfig;
 import com.example.config.SecurityConfig;
@@ -8,6 +8,8 @@ import com.example.dto.*;
 import com.example.exception.*;
 import com.example.repository.UrlRepository;
 import com.example.repository.UserRepository;
+import com.example.service.IQRCodeService;
+import com.example.service.IUrlService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -15,13 +17,17 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import io.smallrye.mutiny.Uni;
+
+/**
+ * Implementation of URL shortening operations
+ */
 @ApplicationScoped
-public class UrlService {
+public class UrlService implements IUrlService {
 
     private static final Logger LOG = Logger.getLogger(UrlService.class);
     private static final String BASE_URL = "https://shortener.by"; // TODO: config
@@ -37,6 +43,9 @@ public class UrlService {
 
     @Inject
     CacheService cacheService;
+
+    @Inject
+    IQRCodeService qrCodeService;
 
     @Inject
     JsonWebToken jwt;
@@ -143,6 +152,36 @@ public class UrlService {
     }
 
     /**
+     * Redirect - get original URL by short code (reactive for better performance)
+     */
+    @Override
+    public Uni<String> redirect(String shortCode) {
+        LOG.debugf("Redirecting short code: %s", shortCode);
+
+        // Try cache first
+        return cacheService.getOriginalUrl(shortCode)
+                .onItem().ifNotNull().transform(url -> url)
+                .onItem().ifNull().switchTo(() -> {
+                    // Cache miss - get from database
+                    Url url = urlRepository.findByShortCode(shortCode)
+                            .orElseThrow(() -> new UrlNotFoundException("URL not found: " + shortCode));
+
+                    // Increment clicks asynchronously (don't wait)
+                    url.clicks++;
+                    urlRepository.persist(url);
+
+                    // Cache for next time
+                    cacheService.cacheOriginalUrl(shortCode, url.originalUrl, appConfig.cache().urlTtl())
+                            .subscribe().with(
+                                    item -> LOG.debugf("Cached URL: %s", shortCode),
+                                    failure -> LOG.errorf("Failed to cache URL: %s", failure.getMessage())
+                            );
+
+                    return Uni.createFrom().item(url.originalUrl);
+                });
+    }
+
+    /**
      * Get URL details
      */
     public UrlResponse getUrl(String shortCode) {
@@ -162,6 +201,34 @@ public class UrlService {
     /**
      * List user's URLs with pagination
      */
+    public UrlListResponse listUrls(int page, int size, String sortBy) {
+        LOG.debugf("Listing URLs: page=%d, size=%d, sortBy=%s", page, size, sortBy);
+
+        UUID userId = getCurrentUserId();
+
+        // Calculate offset
+        int offset = (page - 1) * size;
+
+        // Get URLs (simplified - in real app would use proper sorting)
+        List<Url> urls = urlRepository.find("userId = ?1", userId)
+                .page(offset / size, size)
+                .list();
+
+        List<UrlResponse> urlResponses = urls.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        long total = urlRepository.count("userId", userId);
+
+        return UrlListResponse.builder()
+                .data(urlResponses)
+                .page(page)
+                .size(size)
+                .total(total)
+                .build();
+    }
+
+    // Old method kept for backward compatibility if needed elsewhere
     public UrlListResponse listUrls(int page, int size, String sortBy, String order) {
         UUID userId = getCurrentUserId();
         LOG.debugf("Listing URLs for user: %s (page: %d, size: %d)", userId, page, size);
@@ -266,13 +333,46 @@ public class UrlService {
 
         // Update user stats
         User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));;
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         if (user != null) {
             user.decrementLinksCreated();
             userRepository.persist(user);
         }
 
         LOG.infof("URL deleted successfully: %s", shortCode);
+    }
+
+    /**
+     * Generate QR code for short URL
+     */
+    @Override
+    public byte[] generateQRCode(String shortCode) {
+        LOG.debugf("Generating QR code for: %s", shortCode);
+
+        // Get URL to verify it exists and user has access
+        UrlResponse urlResponse = getUrl(shortCode);
+
+        // Generate QR code using QRCodeService
+        return qrCodeService.generateQRCode(urlResponse.getShortUrl());
+    }
+
+    /**
+     * Get URL analytics
+     */
+    @Override
+    public Url getUrlAnalytics(String shortCode) {
+        LOG.debugf("Getting analytics for: %s", shortCode);
+
+        Url url = urlRepository.findByShortCode(shortCode)
+                .orElseThrow(() -> new UrlNotFoundException("URL not found: " + shortCode));
+
+        // Check ownership
+        UUID currentUserId = getCurrentUserId();
+        if (!url.userId.equals(currentUserId)) {
+            throw new UnauthorizedAccessException("You don't own this URL");
+        }
+
+        return url;
     }
 
     // ============================================

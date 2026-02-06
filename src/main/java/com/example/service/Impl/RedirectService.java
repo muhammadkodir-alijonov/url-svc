@@ -1,4 +1,4 @@
-package com.example.service;
+package com.example.service.Impl;
 
 import com.example.domain.Url;
 import com.example.dto.ClickEvent;

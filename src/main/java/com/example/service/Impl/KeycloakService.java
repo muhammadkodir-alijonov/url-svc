@@ -1,7 +1,8 @@
-package com.example.service;
+package com.example.service.Impl;
 
 import com.example.dto.AuthRequest;
 import com.example.dto.AuthResponse;
+import com.example.service.IKeycloakService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
@@ -19,10 +20,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Service for Keycloak authentication operations
+ * Implementation of Keycloak authentication operations
  */
 @ApplicationScoped
-public class KeycloakService {
+public class KeycloakService implements IKeycloakService {
 
     private static final Logger LOG = Logger.getLogger(KeycloakService.class);
 
@@ -155,7 +156,8 @@ public class KeycloakService {
 
     // Private helper methods
 
-    private String getAdminToken() throws Exception {
+    @Override
+    public String getAdminToken() throws Exception {
         String tokenUrl = keycloakUrl.replace("/realms/url-shortener", "/realms/master")
                 + "/protocol/openid-connect/token";
 
@@ -287,5 +289,12 @@ public class KeycloakService {
             if (end == -1) end = json.indexOf("}", start);
             return json.substring(start, end).trim();
         }
+    }
+
+    @Override
+    public void syncUserToDatabase(String keycloakId, String username, String email) {
+        // This method can be implemented when UserRepository is available
+        LOG.infof("Syncing user to database: keycloakId=%s, username=%s, email=%s", keycloakId, username, email);
+        // TODO: Implement database sync logic
     }
 }
