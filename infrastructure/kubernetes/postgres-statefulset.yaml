@@ -10,6 +10,21 @@ data:
   POSTGRES_PASSWORD: admin123
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: url-shortener
+data:
+  init.sql: |
+    -- Create Keycloak database if not exists
+    SELECT 'CREATE DATABASE keycloak'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'keycloak')\gexec
+    
+    -- Create url_shortener database if not exists
+    SELECT 'CREATE DATABASE url_shortener'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'url_shortener')\gexec
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: postgres
@@ -54,6 +69,9 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
           resources:
             requests:
               memory: "256Mi"
@@ -81,6 +99,10 @@ spec:
                 - url_shortener
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        - name: init-script
+          configMap:
+            name: postgres-init-script
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage

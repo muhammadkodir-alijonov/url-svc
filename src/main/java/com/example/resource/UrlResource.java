@@ -39,6 +39,7 @@ public class UrlResource {
      * Body: { "originalUrl": "https://...", "customAlias": "my-link" }
      */
     @POST
+    @Path("/shorten")
     @RolesAllowed("user")
     @Operation(summary = "Shorten URL", description = "Create a new short URL")
     @SecurityRequirement(name = "bearer-jwt")

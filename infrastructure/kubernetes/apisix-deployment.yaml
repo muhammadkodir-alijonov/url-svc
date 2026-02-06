@@ -66,12 +66,22 @@ spec:
     spec:
       containers:
         - name: etcd
-          image: bitnami/etcd:3.5
+          image: quay.io/coreos/etcd:v3.5.11
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/local/bin/etcd
+            - --data-dir=/etcd-data
+            - --name=etcd0
+            - --initial-advertise-peer-urls=http://etcd:2380
+            - --listen-peer-urls=http://0.0.0.0:2380
+            - --advertise-client-urls=http://etcd:2379
+            - --listen-client-urls=http://0.0.0.0:2379
+            - --initial-cluster=etcd0=http://etcd:2380
+            - --initial-cluster-state=new
+            - --initial-cluster-token=etcd-cluster
           env:
-            - name: ALLOW_NONE_AUTHENTICATION
-              value: "yes"
-            - name: ETCD_ADVERTISE_CLIENT_URLS
-              value: "http://etcd:2379"
+            - name: ETCDCTL_API
+              value: "3"
           ports:
             - containerPort: 2379
               name: client

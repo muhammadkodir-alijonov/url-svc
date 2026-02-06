@@ -93,6 +93,7 @@ public interface AppConfig {
     /**
      * Pulsar settings
      */
+    @ConfigMapping(prefix = "app.pulsar")
     interface PulsarConfig {
 
         /**

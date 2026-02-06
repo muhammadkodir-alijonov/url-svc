@@ -1,0 +1,26 @@
+env:
+  # Production mode
+  - name: KC_DB
+    value: "postgres"
+
+  - name: KC_DB_URL_HOST
+    value: "postgres"
+
+  - name: KC_DB_URL_DATABASE
+    value: "keycloak"
+
+  - name: KC_DB_USERNAME
+    value: "keycloak"
+
+  - name: KC_DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: postgres-secret
+        key: POSTGRES_PASSWORD
+
+  # Production mode ni yoqish
+  - name: KC_HOSTNAME_STRICT
+    value: "false"
+
+  - name: KC_HTTP_ENABLED
+    value: "true"
