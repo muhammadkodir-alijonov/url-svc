@@ -38,9 +38,6 @@ public class KeycloakService implements IKeycloakService {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
-    /**
-     * Register a new user in Keycloak
-     */
     public AuthResponse registerUser(AuthRequest request) {
         try {
             // Step 1: Create user in Keycloak Admin API
@@ -62,9 +59,6 @@ public class KeycloakService implements IKeycloakService {
         }
     }
 
-    /**
-     * Login user and get tokens
-     */
     public AuthResponse loginUser(String username, String password) {
         try {
             String tokenUrl = keycloakUrl + "/protocol/openid-connect/token";
@@ -109,9 +103,6 @@ public class KeycloakService implements IKeycloakService {
         }
     }
 
-    /**
-     * Refresh access token
-     */
     public AuthResponse refreshToken(String refreshToken) {
         try {
             String tokenUrl = keycloakUrl + "/protocol/openid-connect/token";
@@ -153,8 +144,6 @@ public class KeycloakService implements IKeycloakService {
             );
         }
     }
-
-    // Private helper methods
 
     @Override
     public String getAdminToken() throws Exception {

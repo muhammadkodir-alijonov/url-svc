@@ -11,8 +11,6 @@ import jakarta.inject.Named;
 
 /**
  * Redis/Valkey configuration
- *
- * Pre-configured command objects for easier use
  */
 @ApplicationScoped
 public class RedisConfig {
@@ -23,9 +21,6 @@ public class RedisConfig {
     @Inject
     ReactiveRedisDataSource reactiveRedisDataSource;
 
-    /**
-     * Reactive Redis DataSource for async operations
-     */
     @Produces
     @ApplicationScoped
     @Named("reactive")
@@ -33,9 +28,6 @@ public class RedisConfig {
         return reactiveRedisDataSource;
     }
 
-    /**
-     * String value commands
-     */
     @Produces
     @ApplicationScoped
     @Named("stringCommands")
@@ -43,9 +35,6 @@ public class RedisConfig {
         return redisDataSource.value(String.class, String.class);
     }
 
-    /**
-     * Long value commands (for counters)
-     */
     @Produces
     @ApplicationScoped
     @Named("longCommands")
@@ -53,9 +42,6 @@ public class RedisConfig {
         return redisDataSource.value(String.class, Long.class);
     }
 
-    /**
-     * Key commands (for operations like DEL, EXISTS, etc.)
-     */
     @Produces
     @ApplicationScoped
     public KeyCommands<String> keyCommands() {

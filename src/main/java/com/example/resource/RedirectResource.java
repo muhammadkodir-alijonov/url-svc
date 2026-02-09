@@ -31,24 +31,9 @@ public class RedirectResource {
     @Context
     UriInfo uriInfo;
 
-    /**
-     * Redirect to original URL
-     *
-     * GET /{shortCode}?password=secret123
-     *
-     * PUBLIC ENDPOINT - NO AUTHENTICATION REQUIRED!
-     */
     @GET
     @Path("/{shortCode}")
     @PermitAll
-    @Operation(
-            summary = "Redirect to original URL",
-            description = "Redirect to the original URL associated with the short code"
-    )
-    @APIResponse(responseCode = "302", description = "Redirect to original URL")
-    @APIResponse(responseCode = "404", description = "Short URL not found")
-    @APIResponse(responseCode = "410", description = "Link expired")
-    @APIResponse(responseCode = "401", description = "Password required")
     public Response redirect(
             @PathParam("shortCode")
             @Parameter(description = "Short code", example = "aB3xK")
@@ -83,9 +68,6 @@ public class RedirectResource {
                 .build();
     }
 
-    /**
-     * Get client IP address (handling proxies)
-     */
     private String getClientIpAddress() {
         // Check X-Forwarded-For header (if behind proxy/load balancer)
         String xForwardedFor = headers.getHeaderString("X-Forwarded-For");

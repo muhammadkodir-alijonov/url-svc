@@ -74,11 +74,6 @@ public class EventPublisher implements IEventPublisher {
         }
     }
 
-    /**
-     * Publish click event to Pulsar
-     *
-     * Fire-and-forget (non-blocking)
-     */
     public void publishClickEvent(ClickEvent event) {
         if (producer == null) {
             LOG.warn("Pulsar producer not initialized, skipping event");
@@ -103,16 +98,10 @@ public class EventPublisher implements IEventPublisher {
         }
     }
 
-    /**
-     * Publish click event asynchronously with CompletableFuture
-     */
     public CompletableFuture<Void> publishClickEventAsync(ClickEvent event) {
         return CompletableFuture.runAsync(() -> publishClickEvent(event));
     }
 
-    /**
-     * Check if Pulsar is connected
-     */
     public boolean isConnected() {
         return producer != null && producer.isConnected();
     }

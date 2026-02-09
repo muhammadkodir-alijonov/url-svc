@@ -2,11 +2,10 @@ package com.example.resource;
 
 import com.example.domain.User;
 import com.example.dto.UserProfileResponse;
-import com.example.repository.UserRepository;
 import com.example.service.IUserService;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -17,8 +16,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
-import java.util.UUID;
-
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -28,13 +25,11 @@ public class UserResource {
     private static final Logger LOG = Logger.getLogger(UserResource.class);
 
     @Inject
-    UserRepository userRepository;
-
-    @Inject
-    JsonWebToken jwt;
+    Instance<JsonWebToken> jwtInstance;
 
     @Inject
     IUserService userService;
+
     /**
      * Sync user from Keycloak to local database
      *
@@ -45,7 +40,6 @@ public class UserResource {
     @POST
     @Path("/sync")
     @RolesAllowed("user")
-    @Transactional
     @Operation(
             summary = "Sync user",
             description = "Synchronize user from Keycloak to local database"
@@ -54,6 +48,8 @@ public class UserResource {
     @APIResponse(responseCode = "200", description = "User synced successfully")
     @APIResponse(responseCode = "201", description = "User created")
     public Response syncUser() {
+        JsonWebToken jwt = jwtInstance.get();
+
         // Extract user info from JWT
         String keycloakId = jwt.getSubject();
         String username = jwt.getClaim("preferred_username");
@@ -61,35 +57,11 @@ public class UserResource {
 
         LOG.infof("Syncing user: %s (keycloakId: %s)", username, keycloakId);
 
-        // Check if user already exists
-        User user = userRepository.findByKeycloakId(keycloakId).orElse(null);
+        // Call service to sync user
+        User user = userService.syncUser(keycloakId, username, email);
 
-        boolean isNewUser = false;
-
-        if (user == null) {
-            // Create new user
-            user = new User();
-            user.id = UUID.randomUUID();
-            user.keycloakId = keycloakId;
-            user.username = username;
-            user.email = email;
-            user.plan = "FREE";
-            user.linksCreated = 0;
-            user.linksLimit = 100;
-
-            userRepository.persist(user);
-
-            isNewUser = true;
-            LOG.infof("Created new user: %s", username);
-
-        } else {
-            // Update existing user (in case username/email changed in Keycloak)
-            user.username = username;
-            user.email = email;
-            userRepository.persist(user);
-
-            LOG.infof("Updated existing user: %s", username);
-        }
+        // Determine if this was a new user
+        boolean isNewUser = user.linksCreated == 0;
 
         Response.Status status = isNewUser
                 ? Response.Status.CREATED
@@ -111,6 +83,7 @@ public class UserResource {
     @APIResponse(responseCode = "200", description = "User profile")
     @APIResponse(responseCode = "404", description = "User not found")
     public Response getCurrentUser() {
+        JsonWebToken jwt = jwtInstance.get();
         String keycloakId = jwt.getSubject();
 
         LOG.debugf("Get current user request for keycloakId: %s", keycloakId);

@@ -21,12 +21,6 @@ public class ShortCodeGenerator {
     @Inject
     UrlRepository urlRepository;
 
-    /**
-     * Generate random 6-character Base62 code
-     * <p>
-     * Total possibilities: 62^6 = 56,800,235,584 (56+ billion)
-     * Collision probability at 1M URLs: ~0.0009%
-     */
     public String generate() {
         StringBuilder code = new StringBuilder(CODE_LENGTH);
         for (int i = 0; i < CODE_LENGTH; i++) {
@@ -35,11 +29,6 @@ public class ShortCodeGenerator {
         return code.toString();
     }
 
-    /**
-     * Generate unique code with collision check
-     *
-     * @return Unique short code guaranteed to not exist in database
-     */
     public String generateUnique() {
         String code;
         int attempts = 0;
@@ -59,15 +48,7 @@ public class ShortCodeGenerator {
         return code;
     }
 
-    /**
-     * Validate custom alias
-     * <p>
-     * Rules:
-     * - Length: 4-10 characters
-     * - Allowed: a-z, A-Z, 0-9, hyphen (-)
-     * - Not reserved
-     */
-    public boolean isValidCustomAlias(String alias) {
+   public boolean isValidCustomAlias(String alias) {
         if (alias == null || alias.length() < 4 || alias.length() > 10) {
             return false;
         }
@@ -79,14 +60,8 @@ public class ShortCodeGenerator {
         return !isReserved(alias);
     }
 
-    /**
-     * Reserved codes (system routes, common words)
-     */
-    private static final String[] RESERVED_CODES = {"api", "admin", "login", "logout", "register", "signup", "signin", "health", "metrics", "swagger", "docs", "help", "about", "contact", "terms", "privacy", "dashboard", "settings", "profile", "qr"};
+     private static final String[] RESERVED_CODES = {"api", "admin", "login", "logout", "register", "signup", "signin", "health", "metrics", "swagger", "docs", "help", "about", "contact", "terms", "privacy", "dashboard", "settings", "profile", "qr"};
 
-    /**
-     * Check if code is reserved
-     */
     public boolean isReserved(String code) {
         if (code == null) {
             return false;
@@ -101,9 +76,6 @@ public class ShortCodeGenerator {
         return false;
     }
 
-    /**
-     * Validate URL format
-     */
     public boolean isValidUrl(String url) {
         if (url == null || url.isEmpty()) {
             return false;

@@ -32,25 +32,10 @@ public class UrlResource {
     @Inject
     IQRCodeService qrCodeService;
 
-    /**
-     * Shorten URL
-     *
-     * POST /api/urls
-     * Body: { "originalUrl": "https://...", "customAlias": "my-link" }
-     */
     @POST
     @Path("/shorten")
     @RolesAllowed("user")
-    @Operation(summary = "Shorten URL", description = "Create a new short URL")
     @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(
-            responseCode = "201",
-            description = "URL shortened successfully",
-            content = @Content(schema = @Schema(implementation = ShortenResponse.class))
-    )
-    @APIResponse(responseCode = "400", description = "Invalid request")
-    @APIResponse(responseCode = "401", description = "Unauthorized")
-    @APIResponse(responseCode = "409", description = "Alias already taken")
     public Response shorten(@Valid ShortenRequest request) {
         LOG.infof("Shorten request received: %s", request.getOriginalUrl());
 
@@ -61,20 +46,9 @@ public class UrlResource {
                 .build();
     }
 
-    /**
-     * List my URLs
-     *
-     * GET /api/urls?page=1&size=20&sortBy=createdAt&order=desc
-     */
     @GET
     @RolesAllowed("user")
-    @Operation(summary = "List my URLs", description = "Get all URLs created by current user")
     @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(
-            responseCode = "200",
-            description = "URLs retrieved successfully",
-            content = @Content(schema = @Schema(implementation = UrlListResponse.class))
-    )
     public Response listUrls(
             @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("size") @DefaultValue("20") int size,
@@ -89,23 +63,10 @@ public class UrlResource {
         return Response.ok(response).build();
     }
 
-    /**
-     * Get URL details
-     *
-     * GET /api/urls/{shortCode}
-     */
     @GET
     @Path("/{shortCode}")
     @RolesAllowed("user")
-    @Operation(summary = "Get URL details", description = "Get details of a specific short URL")
     @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(
-            responseCode = "200",
-            description = "URL details retrieved",
-            content = @Content(schema = @Schema(implementation = UrlResponse.class))
-    )
-    @APIResponse(responseCode = "404", description = "URL not found")
-    @APIResponse(responseCode = "403", description = "Not your URL")
     public Response getUrl(
             @PathParam("shortCode")
             @Parameter(description = "Short code", example = "aB3xK")
@@ -118,24 +79,10 @@ public class UrlResource {
         return Response.ok(response).build();
     }
 
-    /**
-     * Update URL
-     *
-     * PUT /api/urls/{shortCode}
-     * Body: { "originalUrl": "https://new-url.com", "title": "New Title" }
-     */
     @PUT
     @Path("/{shortCode}")
     @RolesAllowed("user")
-    @Operation(summary = "Update URL", description = "Update an existing short URL")
     @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(
-            responseCode = "200",
-            description = "URL updated successfully",
-            content = @Content(schema = @Schema(implementation = UrlResponse.class))
-    )
-    @APIResponse(responseCode = "404", description = "URL not found")
-    @APIResponse(responseCode = "403", description = "Not your URL")
     public Response updateUrl(
             @PathParam("shortCode") String shortCode,
             @Valid UpdateUrlRequest request) {
@@ -147,19 +94,10 @@ public class UrlResource {
         return Response.ok(response).build();
     }
 
-    /**
-     * Delete URL
-     *
-     * DELETE /api/urls/{shortCode}
-     */
     @DELETE
     @Path("/{shortCode}")
     @RolesAllowed("user")
-    @Operation(summary = "Delete URL", description = "Delete a short URL")
     @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(responseCode = "204", description = "URL deleted successfully")
-    @APIResponse(responseCode = "404", description = "URL not found")
-    @APIResponse(responseCode = "403", description = "Not your URL")
     public Response deleteUrl(@PathParam("shortCode") String shortCode) {
         LOG.infof("Delete URL: %s", shortCode);
 
@@ -168,21 +106,9 @@ public class UrlResource {
         return Response.noContent().build();
     }
 
-    /**
-     * Get QR Code
-     *
-     * GET /api/urls/{shortCode}/qr?size=256
-     */
     @GET
     @Path("/{shortCode}/qr")
     @Produces("image/png")
-    @Operation(summary = "Get QR Code", description = "Generate QR code for short URL")
-    @APIResponse(
-            responseCode = "200",
-            description = "QR code generated",
-            content = @Content(mediaType = "image/png")
-    )
-    @APIResponse(responseCode = "404", description = "URL not found")
     public Response getQRCode(
             @PathParam("shortCode") String shortCode,
             @QueryParam("size") @DefaultValue("256") int size) {

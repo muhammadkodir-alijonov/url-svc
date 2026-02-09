@@ -24,13 +24,6 @@ public class QRCodeService implements IQRCodeService {
     private static final int MIN_SIZE = 64;
     private static final int MAX_SIZE = 1024;
 
-    /**
-     * Generate QR code as PNG byte array
-     *
-     * @param url URL to encode
-     * @param size QR code size (width and height)
-     * @return PNG image as byte array
-     */
     public byte[] generateQRCode(String url, int size) {
         // Validate size
         int qrSize = size;
@@ -60,9 +53,6 @@ public class QRCodeService implements IQRCodeService {
         }
     }
 
-    /**
-     * Generate QR code with default size
-     */
     public byte[] generateQRCode(String url) {
         return generateQRCode(url, DEFAULT_SIZE);
     }

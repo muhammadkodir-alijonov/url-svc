@@ -94,9 +94,6 @@ public class CacheService implements ICacheService {
                 });
     }
 
-    /**
-     * Get value from cache
-     */
     public Optional<String> get(String key) {
         try {
             String value = valueCommands.get(key).await().indefinitely();
@@ -113,9 +110,6 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Set value in cache with TTL
-     */
     public void set(String key, String value, Duration ttl) {
         try {
             valueCommands.setex(key, ttl.getSeconds(), value)
@@ -126,9 +120,6 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Set value in cache without TTL (permanent)
-     */
     public void set(String key, String value) {
         try {
             valueCommands.set(key, value)
@@ -139,9 +130,6 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Delete key from cache
-     */
     public void delete(String key) {
         try {
             redisDataSource.key().del(key)
@@ -152,9 +140,6 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Increment counter
-     */
     public void increment(String key) {
         try {
             valueCommands.incr(key).await().indefinitely();
@@ -163,9 +148,6 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Check if key exists
-     */
     public boolean exists(String key) {
         try {
             return redisDataSource.key().exists(key).await().indefinitely();
@@ -175,42 +157,27 @@ public class CacheService implements ICacheService {
         }
     }
 
-    /**
-     * Cache keys for URL mapping
-     */
     public static String urlCacheKey(String shortCode) {
         return "url:" + shortCode;
     }
 
-    /**
-     * Cache keys for click counters
-     */
     public static String clickCounterKey(String shortCode) {
         return "clicks:" + shortCode;
     }
 
-    /**
-     * Cache keys for rate limiting
-     */
     public static String rateLimitKey(String userId, String action) {
         return "ratelimit:" + userId + ":" + action;
     }
 
-    /**
-     * Cache keys for analytics
-     */
+
     public static String analyticsCacheKey(String shortCode, String metric) {
         return "analytics:" + shortCode + ":" + metric;
     }
-    /**
-     * Example method to cache a URL
-     */
+
     public void cacheUrl(String key, String url) {
         stringCommands.set(key, url);
     }
-    /**
-     * Example method to increment a counter
-     */
+
     public void incrementCounter(String key) {
         longCommands.incr(key);
     }

@@ -53,9 +53,6 @@ public class UrlService implements IUrlService {
     @Inject
     AppConfig appConfig;
 
-    /**
-     * Shorten URL
-     */
     @Transactional
     public ShortenResponse shorten(ShortenRequest request) {
         LOG.infof("Shortening URL: %s", request.getOriginalUrl());
@@ -151,9 +148,7 @@ public class UrlService implements IUrlService {
                 .build();
     }
 
-    /**
-     * Redirect - get original URL by short code (reactive for better performance)
-     */
+
     @Override
     public Uni<String> redirect(String shortCode) {
         LOG.debugf("Redirecting short code: %s", shortCode);
@@ -181,9 +176,7 @@ public class UrlService implements IUrlService {
                 });
     }
 
-    /**
-     * Get URL details
-     */
+
     public UrlResponse getUrl(String shortCode) {
         LOG.debugf("Getting URL details: %s", shortCode);
 
@@ -198,9 +191,7 @@ public class UrlService implements IUrlService {
         return mapToResponse(url);
     }
 
-    /**
-     * List user's URLs with pagination
-     */
+
     public UrlListResponse listUrls(int page, int size, String sortBy) {
         LOG.debugf("Listing URLs: page=%d, size=%d, sortBy=%s", page, size, sortBy);
 
@@ -254,9 +245,6 @@ public class UrlService implements IUrlService {
                 .build();
     }
 
-    /**
-     * Update URL
-     */
     @Transactional
     public UrlResponse updateUrl(String shortCode, UpdateUrlRequest request) {
         LOG.infof("Updating URL: %s", shortCode);
@@ -308,9 +296,7 @@ public class UrlService implements IUrlService {
         return mapToResponse(url);
     }
 
-    /**
-     * Delete URL
-     */
+
     @Transactional
     public void deleteUrl(String shortCode) {
         LOG.infof("Deleting URL: %s", shortCode);
@@ -342,9 +328,7 @@ public class UrlService implements IUrlService {
         LOG.infof("URL deleted successfully: %s", shortCode);
     }
 
-    /**
-     * Generate QR code for short URL
-     */
+
     @Override
     public byte[] generateQRCode(String shortCode) {
         LOG.debugf("Generating QR code for: %s", shortCode);
@@ -356,9 +340,7 @@ public class UrlService implements IUrlService {
         return qrCodeService.generateQRCode(urlResponse.getShortUrl());
     }
 
-    /**
-     * Get URL analytics
-     */
+
     @Override
     public Url getUrlAnalytics(String shortCode) {
         LOG.debugf("Getting analytics for: %s", shortCode);
@@ -375,13 +357,6 @@ public class UrlService implements IUrlService {
         return url;
     }
 
-    // ============================================
-    // HELPER METHODS
-    // ============================================
-
-    /**
-     * Get current user ID from JWT
-     */
     private UUID getCurrentUserId() {
         String keycloakId = jwt.getSubject();
         return userRepository.findByKeycloakId(keycloakId)
@@ -389,23 +364,14 @@ public class UrlService implements IUrlService {
                 .orElseThrow(() -> new UnauthorizedAccessException("User not found in database"));
     }
 
-    /**
-     * Build short URL
-     */
     private String buildShortUrl(String shortCode) {
         return appConfig.baseUrl() + "/" + shortCode;
     }
 
-    /**
-     * Build QR code URL
-     */
     private String buildQrCodeUrl(String shortCode) {
         return BASE_URL + "/api/urls/" + shortCode + "/qr";
     }
 
-    /**
-     * Map entity to response DTO
-     */
     private UrlResponse mapToResponse(Url url) {
         return UrlResponse.builder()
                 .id(url.id)
@@ -423,9 +389,7 @@ public class UrlService implements IUrlService {
                 .lastAccessedAt(url.lastAccessedAt)
                 .build();
     }
-    /**
-     * Check password
-     */
+
     public boolean checkPassword(String input, String hash) {
         return SecurityConfig.SecurityHelper.verifyPassword(input, hash);
     }

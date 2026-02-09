@@ -16,13 +16,7 @@ public class SecurityConfig {
 
     private static final Logger LOG = Logger.getLogger(SecurityConfig.class);
 
-    /**
-     * CORS Filter (if not using Quarkus built-in CORS)
-     *
-     * Note: We're using quarkus.http.cors in application.yml,
-     * so this is just for reference/custom logic
-     */
-    @Provider
+  @Provider
     public static class CorsFilter implements ContainerRequestFilter {
 
         @Override
@@ -32,11 +26,6 @@ public class SecurityConfig {
         }
     }
 
-    /**
-     * Custom authentication filter (optional)
-     *
-     * Use this if you need custom auth logic beyond JWT
-     */
     @Provider
     public static class CustomAuthFilter implements ContainerRequestFilter {
 

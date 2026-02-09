@@ -18,7 +18,6 @@ import java.util.Map;
 public class HealthResource {
 
     @GET
-    @Operation(summary = "Health check", description = "Check if service is running")
     public Response health() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");

@@ -1,9 +1,10 @@
-package com.example.service;
+package com.example.service.Impl;
 
 import com.example.domain.User;
 import com.example.dto.UserProfileResponse;
 import com.example.exception.UserNotFoundException;
 import com.example.repository.UserRepository;
+import com.example.service.IUserService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -71,13 +72,13 @@ public class UserService implements IUserService {
         User user = getUserByKeycloakId(keycloakId);
 
         return UserProfileResponse.builder()
-                .id(user.id)
+                .id(String.valueOf(user.id))
                 .username(user.username)
                 .email(user.email)
                 .plan(user.plan)
                 .linksCreated(user.linksCreated)
                 .linksLimit(user.linksLimit)
-                .createdAt(user.createdAt)
+                .createdAt(String.valueOf(user.createdAt))
                 .build();
     }
 }
