@@ -21,9 +21,29 @@ A production-ready URL shortening service built with Quarkus, featuring:
 ## 📚 Documentation
 
 - [Kubernetes Deployment Guide](docs/KUBERNETES_DEPLOYMENT.md)
+- [Keycloak Client Setup](KEYCLOAK_CLIENT_SETUP.md) ← **Required for login to work**
+- [Quick Fix Guide](QUICK_FIX.md) ← **Solve common login issues**
 - [Vault & APISIX Setup](docs/VAULT_APISIX_SETUP.md)
-- [Scripts Usage Guide](docs/SCRIPTS_USAGE.md) ← **Script management tips**
+- [Scripts Usage Guide](docs/SCRIPTS_USAGE.md)
 - [API Documentation](http://localhost:8080/q/swagger-ui) (when running)
+
+## ⚠️ Important: Keycloak Configuration
+
+**After deploying**, you MUST configure Keycloak client for login to work:
+
+```powershell
+# Windows
+cd scripts
+.\configure-keycloak-client.ps1
+
+# Linux/Mac
+chmod +x scripts/configure-keycloak-client.sh
+./scripts/configure-keycloak-client.sh
+```
+
+Or manually enable **Direct Access Grants** in Keycloak Admin UI.
+
+See [QUICK_FIX.md](QUICK_FIX.md) for details.
 
 ## 🚀 Quick Start
 

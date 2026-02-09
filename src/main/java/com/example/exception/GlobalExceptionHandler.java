@@ -12,7 +12,6 @@ import java.time.Instant;
 
 /**
  * Global exception handler
- *
  * Catches all exceptions and returns consistent JSON error responses
  */
 @Provider
@@ -30,7 +29,24 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         ErrorResponse errorResponse;
         Response.Status status;
 
-        // Map exceptions to HTTP status codes
+        // Handle WebApplicationException (from Keycloak/REST calls)
+        if (exception instanceof jakarta.ws.rs.WebApplicationException webEx) {
+            status = Response.Status.fromStatusCode(webEx.getResponse().getStatus());
+            if (status == null) {
+                status = Response.Status.INTERNAL_SERVER_ERROR;
+            }
+
+            // Use the original exception message
+            errorResponse = buildErrorResponse(
+                    status,
+                    status.getReasonPhrase(),
+                    exception.getMessage()
+            );
+
+            return Response.status(status).entity(errorResponse).build();
+        }
+
+        // Map custom exceptions to HTTP status codes
         if (exception instanceof UrlNotFoundException) {
             status = Response.Status.NOT_FOUND;
             errorResponse = buildErrorResponse(status, exception);
@@ -98,16 +114,10 @@ public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
         return Response.status(status).entity(errorResponse).build();
     }
 
-    /**
-     * Build error response with exception message
-     */
     private ErrorResponse buildErrorResponse(Response.Status status, Exception exception) {
         return buildErrorResponse(status, status.getReasonPhrase(), exception.getMessage());
     }
 
-    /**
-     * Build error response with custom error and message
-     */
     private ErrorResponse buildErrorResponse(Response.Status status, String error, String message) {
         return ErrorResponse.builder()
                 .status(status.getStatusCode())

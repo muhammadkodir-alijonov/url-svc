@@ -1,10 +1,15 @@
 package com.example.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 /**
  * Response DTO for authentication
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AuthResponse {
 
     public String accessToken;
@@ -20,13 +25,4 @@ public class AuthResponse {
     public String username;
 
     public String email;
-
-    public AuthResponse() {
-    }
-
-    public AuthResponse(String accessToken, String refreshToken, Integer expiresIn) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-        this.expiresIn = expiresIn;
-    }
 }
