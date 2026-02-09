@@ -10,9 +10,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -30,23 +27,9 @@ public class UserResource {
     @Inject
     IUserService userService;
 
-    /**
-     * Sync user from Keycloak to local database
-     *
-     * Called by frontend after successful Keycloak login
-     *
-     * POST /api/users/sync
-     */
     @POST
     @Path("/sync")
     @RolesAllowed("user")
-    @Operation(
-            summary = "Sync user",
-            description = "Synchronize user from Keycloak to local database"
-    )
-    @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(responseCode = "200", description = "User synced successfully")
-    @APIResponse(responseCode = "201", description = "User created")
     public Response syncUser() {
         JsonWebToken jwt = jwtInstance.get();
 
@@ -70,18 +53,9 @@ public class UserResource {
         return Response.status(status).entity(user).build();
     }
 
-    /**
-     * Get current user profile
-     *
-     * GET /api/users/me
-     */
     @GET
     @Path("/me")
     @RolesAllowed("user")
-    @Operation(summary = "Get current user", description = "Get current user profile")
-    @SecurityRequirement(name = "bearer-jwt")
-    @APIResponse(responseCode = "200", description = "User profile")
-    @APIResponse(responseCode = "404", description = "User not found")
     public Response getCurrentUser() {
         JsonWebToken jwt = jwtInstance.get();
         String keycloakId = jwt.getSubject();
