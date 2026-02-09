@@ -2,13 +2,13 @@ package com.example.service.Impl;
 
 import com.example.service.ICacheService;
 import io.quarkus.redis.datasource.ReactiveRedisDataSource;
+import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.value.ReactiveValueCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import org.jboss.logging.Logger;
 
 import java.time.Duration;
@@ -20,25 +20,23 @@ import java.util.Optional;
 @ApplicationScoped
 public class CacheService implements ICacheService {
 
-    @Inject
-    @Named("stringCommands")
-    ValueCommands<String, String> stringCommands;
-
-    @Inject
-    @Named("longCommands")
-    ValueCommands<String, Long> longCommands;
-
     private static final Logger LOG = Logger.getLogger(CacheService.class);
 
     @Inject
-    @Named("reactive")
-    ReactiveRedisDataSource redisDataSource;
+    RedisDataSource redisDataSource;
 
+    @Inject
+    ReactiveRedisDataSource reactiveRedisDataSource;
+
+    private ValueCommands<String, String> stringCommands;
+    private ValueCommands<String, Long> longCommands;
     private ReactiveValueCommands<String, String> valueCommands;
 
     @PostConstruct
     void init() {
-        valueCommands = redisDataSource.value(String.class, String.class);
+        stringCommands = redisDataSource.value(String.class, String.class);
+        longCommands = redisDataSource.value(String.class, Long.class);
+        valueCommands = reactiveRedisDataSource.value(String.class, String.class);
     }
 
     @Override
@@ -66,7 +64,7 @@ public class CacheService implements ICacheService {
     @Override
     public Uni<Void> invalidateCache(String shortCode) {
         String key = urlCacheKey(shortCode);
-        return redisDataSource.key().del(key)
+        return reactiveRedisDataSource.key().del(key)
                 .replaceWithVoid()
                 .invoke(() -> LOG.debugf("Invalidated cache for: %s", shortCode));
     }
@@ -74,12 +72,12 @@ public class CacheService implements ICacheService {
     @Override
     public Uni<Boolean> isRateLimitExceeded(String key, int limit, long windowSeconds) {
         String rateLimitKey = "ratelimit:" + key;
-        return redisDataSource.value(String.class, Long.class)
+        return reactiveRedisDataSource.value(String.class, Long.class)
                 .get(rateLimitKey)
                 .onItem().transformToUni(count -> {
                     if (count == null) {
                         // First request - set counter to 1
-                        return redisDataSource.value(String.class, Long.class)
+                        return reactiveRedisDataSource.value(String.class, Long.class)
                                 .setex(rateLimitKey, windowSeconds, 1L)
                                 .replaceWith(false);
                     } else if (count >= limit) {
@@ -87,7 +85,7 @@ public class CacheService implements ICacheService {
                         return Uni.createFrom().item(true);
                     } else {
                         // Increment counter
-                        return redisDataSource.value(String.class, Long.class)
+                        return reactiveRedisDataSource.value(String.class, Long.class)
                                 .incr(rateLimitKey)
                                 .replaceWith(false);
                     }
@@ -132,7 +130,7 @@ public class CacheService implements ICacheService {
 
     public void delete(String key) {
         try {
-            redisDataSource.key().del(key)
+            reactiveRedisDataSource.key().del(key)
                     .await().indefinitely();
             LOG.debugf("Cache DELETE: %s", key);
         } catch (Exception e) {
@@ -150,7 +148,7 @@ public class CacheService implements ICacheService {
 
     public boolean exists(String key) {
         try {
-            return redisDataSource.key().exists(key).await().indefinitely();
+            return reactiveRedisDataSource.key().exists(key).await().indefinitely();
         } catch (Exception e) {
             LOG.errorf("Cache EXISTS error for key %s: %s", key, e.getMessage());
             return false;
