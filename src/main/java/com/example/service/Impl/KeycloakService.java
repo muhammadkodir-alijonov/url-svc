@@ -3,17 +3,19 @@ package com.example.service.Impl;
 import com.example.dto.AuthRequest;
 import com.example.dto.AuthResponse;
 import com.example.service.IKeycloakService;
+import com.example.service.IUserService;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +37,9 @@ public class KeycloakService implements IKeycloakService {
 
     @ConfigProperty(name = "quarkus.oidc.credentials.secret", defaultValue = "")
     String clientSecret;
+
+    @Inject
+    IUserService userService;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -204,7 +209,26 @@ public class KeycloakService implements IKeycloakService {
             }
 
             LOG.infof("Login successful for user: %s", username);
-            return parseTokenResponse(response.body());
+
+            // Parse token response
+            AuthResponse authResponse = parseTokenResponse(response.body());
+
+            // Automatically sync user to database after successful login
+            if (authResponse.user != null) {
+                try {
+                    LOG.infof("Auto-syncing user to database: %s", username);
+                    userService.syncUser(
+                            authResponse.user.id,
+                            authResponse.user.username,
+                            extractEmailFromToken(authResponse.accessToken)
+                    );
+                } catch (Exception e) {
+                    // Don't fail login if sync fails, just log it
+                    LOG.warnf(e, "Failed to sync user to database: %s", username);
+                }
+            }
+
+            return authResponse;
 
         } catch (WebApplicationException e) {
             // Re-throw WebApplicationException as-is
@@ -431,7 +455,7 @@ public class KeycloakService implements IKeycloakService {
         authResponse.expiresIn = expiresIn != null ? Integer.parseInt(expiresIn) : 300;
         authResponse.tokenType = "Bearer";
 
-        // Extract user info from JWT token
+        // Extract minimal user info from JWT token
         if (accessToken != null) {
             try {
                 String[] parts = accessToken.split("\\.");
@@ -442,13 +466,16 @@ public class KeycloakService implements IKeycloakService {
                             StandardCharsets.UTF_8
                     );
 
-                    // Extract user information from payload
-                    authResponse.userId = extractJsonValue(payload, "sub");
-                    authResponse.username = extractJsonValue(payload, "preferred_username");
-                    authResponse.email = extractJsonValue(payload, "email");
+                    // Extract user information and create nested UserInfo
+                    String userId = extractJsonValue(payload, "sub");
+                    String username = extractJsonValue(payload, "preferred_username");
 
-                    LOG.debugf("Extracted user info: userId=%s, username=%s, email=%s",
-                            authResponse.userId, authResponse.username, authResponse.email);
+                    authResponse.user = AuthResponse.UserInfo.builder()
+                            .id(userId)
+                            .username(username)
+                            .build();
+
+                    LOG.debugf("Extracted user info: userId=%s, username=%s", userId, username);
                 }
             } catch (Exception e) {
                 LOG.warnf("Failed to decode JWT token: %s", e.getMessage());
@@ -473,6 +500,25 @@ public class KeycloakService implements IKeycloakService {
             if (end == -1) end = json.indexOf("}", start);
             return json.substring(start, end).trim();
         }
+    }
+
+    /**
+     * Extract email from JWT token payload
+     */
+    private String extractEmailFromToken(String token) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length > 1) {
+                String payload = new String(
+                        java.util.Base64.getUrlDecoder().decode(parts[1]),
+                        StandardCharsets.UTF_8
+                );
+                return extractJsonValue(payload, "email");
+            }
+        } catch (Exception e) {
+            LOG.warnf("Failed to extract email from token: %s", e.getMessage());
+        }
+        return null;
     }
 
     @Override

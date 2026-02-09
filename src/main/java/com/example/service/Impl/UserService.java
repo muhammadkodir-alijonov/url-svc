@@ -47,9 +47,9 @@ public class UserService implements IUserService {
             LOG.infof("Created new user: %s", username);
         } else {
             // Update existing user (in case username/email changed in Keycloak)
+            // JPA will auto-update on transaction commit (dirty checking)
             user.username = username;
             user.email = email;
-            userRepository.persist(user);
 
             LOG.infof("Updated existing user: %s", username);
         }

@@ -1,15 +1,18 @@
 package com.example.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 /**
  * Response DTO for authentication
+ * Contains JWT tokens and minimal user information
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResponse {
 
     public String accessToken;
@@ -20,9 +23,17 @@ public class AuthResponse {
 
     public Integer expiresIn;
 
-    public String userId;
+    // Nested user info (optional - only in login/register responses)
+    public UserInfo user;
 
-    public String username;
-
-    public String email;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserInfo {
+        public String id;
+        public String username;
+        // Email is in JWT token, no need to expose here
+    }
 }
