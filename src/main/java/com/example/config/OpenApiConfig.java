@@ -2,20 +2,14 @@ package com.example.config;
 
 import jakarta.ws.rs.core.Application;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.info.License;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.servers.Server;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
-import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
 
-/**
- * OpenAPI/Swagger configuration
- *
- * Accessible at: http://localhost:8080/swagger-ui
- */
 @OpenAPIDefinition(
         info = @Info(
                 title = "URL Shortener API",
@@ -46,6 +40,7 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
                 )
         },
         tags = {
+                @Tag(name = "Authentication", description = "User registration, login, and token management"),
                 @Tag(name = "URL Management", description = "Create, update, delete short URLs"),
                 @Tag(name = "Redirect", description = "Public redirect endpoints"),
                 @Tag(name = "User Management", description = "User profile and sync"),
@@ -57,7 +52,12 @@ import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeIn;
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT",
-        description = "JWT token from Keycloak. Get token by logging in through Keycloak."
+        description = "JWT Bearer Token. Just paste your token here (without 'Bearer' prefix - it will be added automatically).\n\n" +
+                      "To get a token:\n" +
+                      "1. POST /api/auth/login with username and password\n" +
+                      "2. Copy the 'accessToken' from response\n" +
+                      "3. Paste it here and click 'Authorize'\n\n" +
+                      "Example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 )
 public class OpenApiConfig extends Application {
     // This class is just for OpenAPI annotations

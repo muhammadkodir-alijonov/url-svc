@@ -14,6 +14,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -68,6 +69,7 @@ public class AuthResource {
     @POST
     @Path("/logout")
     @RolesAllowed("user")
+    @SecurityRequirement(name = "bearer-jwt")
     public Response logout() {
         LOG.info("User logout");
         return Response.noContent().build();
