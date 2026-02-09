@@ -32,28 +32,10 @@ public class UserResource {
     @Inject
     IUserService userService;
 
-    /**
-     * Sync user from Keycloak to local database
-     */
     @POST
     @Path("/sync")
     @RolesAllowed("user")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(
-            summary = "Sync user",
-            description = "Synchronize user from Keycloak to local database. Called after login to create/update user record."
-    )
-    @APIResponse(
-            responseCode = "200",
-            description = "User synchronized successfully",
-            content = @Content(schema = @Schema(implementation = User.class))
-    )
-    @APIResponse(
-            responseCode = "201",
-            description = "New user created",
-            content = @Content(schema = @Schema(implementation = User.class))
-    )
-    @APIResponse(responseCode = "401", description = "Unauthorized - token missing or invalid")
     public Response syncUser() {
         JsonWebToken jwt = jwtInstance.get();
 
@@ -84,17 +66,6 @@ public class UserResource {
     @Path("/me")
     @RolesAllowed("user")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(
-            summary = "Get current user",
-            description = "Get current authenticated user profile information"
-    )
-    @APIResponse(
-            responseCode = "200",
-            description = "User profile retrieved successfully",
-            content = @Content(schema = @Schema(implementation = UserProfileResponse.class))
-    )
-    @APIResponse(responseCode = "401", description = "Unauthorized - token missing or invalid")
-    @APIResponse(responseCode = "404", description = "User not found - please sync first")
     public Response getCurrentUser() {
         JsonWebToken jwt = jwtInstance.get();
         String keycloakId = jwt.getSubject();
