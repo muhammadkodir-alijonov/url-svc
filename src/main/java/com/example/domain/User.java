@@ -14,7 +14,6 @@ import java.util.UUID;
 public class User extends PanacheEntityBase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "UUID")
     public UUID id;
 
@@ -26,6 +25,12 @@ public class User extends PanacheEntityBase {
 
     @Column(nullable = false, unique = true)
     public String email;
+
+    @Column(name = "first_name", length = 100)
+    public String firstName;
+
+    @Column(name = "last_name", length = 100)
+    public String lastName;
 
     @Column(length = 20)
     public String plan = "FREE";

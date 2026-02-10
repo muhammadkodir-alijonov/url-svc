@@ -61,11 +61,13 @@ public class UserResource {
         String keycloakId = jwt.getSubject();
         String username = jwt.getClaim("preferred_username");
         String email = jwt.getClaim("email");
+        String firstName = jwt.getClaim("given_name");
+        String lastName = jwt.getClaim("family_name");
 
         LOG.infof("Syncing user: %s (keycloakId: %s)", username, keycloakId);
 
         // Call service to sync user
-        User user = userService.syncUser(keycloakId, username, email);
+        User user = userService.syncUser(keycloakId, username, email, firstName, lastName);
 
         // Determine if this was a new user
         boolean isNewUser = user.linksCreated == 0;

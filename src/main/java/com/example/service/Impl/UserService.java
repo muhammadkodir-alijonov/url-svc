@@ -25,7 +25,7 @@ public class UserService implements IUserService {
 
     @Override
     @Transactional
-    public User syncUser(String keycloakId, String username, String email) {
+    public User syncUser(String keycloakId, String username, String email, String firstName, String lastName) {
         LOG.infof("Syncing user: %s (keycloakId: %s)", username, keycloakId);
 
         // Check if user already exists
@@ -38,6 +38,8 @@ public class UserService implements IUserService {
             user.keycloakId = keycloakId;
             user.username = username;
             user.email = email;
+            user.firstName = firstName;
+            user.lastName = lastName;
             user.plan = "FREE";
             user.linksCreated = 0;
             user.linksLimit = 100;
@@ -50,6 +52,8 @@ public class UserService implements IUserService {
             // JPA will auto-update on transaction commit (dirty checking)
             user.username = username;
             user.email = email;
+            user.firstName = firstName;
+            user.lastName = lastName;
 
             LOG.infof("Updated existing user: %s", username);
         }
@@ -75,6 +79,8 @@ public class UserService implements IUserService {
                 .id(String.valueOf(user.id))
                 .username(user.username)
                 .email(user.email)
+                .firstName(user.firstName)
+                .lastName(user.lastName)
                 .plan(user.plan)
                 .linksCreated(user.linksCreated)
                 .linksLimit(user.linksLimit)

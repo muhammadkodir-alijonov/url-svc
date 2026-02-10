@@ -8,7 +8,7 @@ import com.example.dto.UserProfileResponse;
  */
 public interface IUserService {
 
-    User syncUser(String keycloakId, String username, String email);
+    User syncUser(String keycloakId, String username, String email, String firstName, String lastName);
 
     User getUserByKeycloakId(String keycloakId);
 

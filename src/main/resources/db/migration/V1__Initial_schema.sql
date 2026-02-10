@@ -4,10 +4,12 @@
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
-    keycloak_id VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(255) UNIQUE NOT NULL,
+    keycloak_id VARCHAR(100) UNIQUE NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    plan VARCHAR(50) NOT NULL DEFAULT 'FREE',
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    plan VARCHAR(20) NOT NULL DEFAULT 'FREE',
     links_created INTEGER NOT NULL DEFAULT 0,
     links_limit INTEGER NOT NULL DEFAULT 100,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,17 +23,19 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- URLs table
 CREATE TABLE IF NOT EXISTS urls (
-    id UUID PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL,
     short_code VARCHAR(10) UNIQUE NOT NULL,
     original_url TEXT NOT NULL,
-    title VARCHAR(500),
-    description TEXT,
-    clicks BIGINT NOT NULL DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    title VARCHAR(255),
+    password_hash VARCHAR(255),
+    clicks INTEGER NOT NULL DEFAULT 0,
     expires_at TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_custom BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_accessed_at TIMESTAMP,
     CONSTRAINT fk_urls_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -39,12 +43,13 @@ CREATE TABLE IF NOT EXISTS urls (
 CREATE INDEX IF NOT EXISTS idx_urls_short_code ON urls(short_code);
 CREATE INDEX IF NOT EXISTS idx_urls_user_id ON urls(user_id);
 CREATE INDEX IF NOT EXISTS idx_urls_active ON urls(is_active);
+CREATE INDEX IF NOT EXISTS idx_urls_created_at ON urls(created_at);
 CREATE INDEX IF NOT EXISTS idx_urls_expires_at ON urls(expires_at);
 
 -- URL clicks tracking table (optional - for analytics)
 CREATE TABLE IF NOT EXISTS url_clicks (
-    id UUID PRIMARY KEY,
-    url_id UUID NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    url_id BIGINT NOT NULL,
     clicked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ip_address VARCHAR(45),
     user_agent TEXT,

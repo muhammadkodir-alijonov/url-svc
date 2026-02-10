@@ -220,7 +220,9 @@ public class KeycloakService implements IKeycloakService {
                     userService.syncUser(
                             authResponse.user.id,
                             authResponse.user.username,
-                            extractEmailFromToken(authResponse.accessToken)
+                            extractEmailFromToken(authResponse.accessToken),
+                            extractClaimFromToken(authResponse.accessToken, "given_name"),
+                            extractClaimFromToken(authResponse.accessToken, "family_name")
                     );
                 } catch (Exception e) {
                     // Don't fail login if sync fails, just log it
@@ -506,6 +508,13 @@ public class KeycloakService implements IKeycloakService {
      * Extract email from JWT token payload
      */
     private String extractEmailFromToken(String token) {
+        return extractClaimFromToken(token, "email");
+    }
+
+    /**
+     * Extract any claim from JWT token payload
+     */
+    private String extractClaimFromToken(String token, String claimName) {
         try {
             String[] parts = token.split("\\.");
             if (parts.length > 1) {
@@ -513,10 +522,10 @@ public class KeycloakService implements IKeycloakService {
                         java.util.Base64.getUrlDecoder().decode(parts[1]),
                         StandardCharsets.UTF_8
                 );
-                return extractJsonValue(payload, "email");
+                return extractJsonValue(payload, claimName);
             }
         } catch (Exception e) {
-            LOG.warnf("Failed to extract email from token: %s", e.getMessage());
+            LOG.warnf("Failed to extract %s from token: %s", claimName, e.getMessage());
         }
         return null;
     }
