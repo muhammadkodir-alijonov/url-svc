@@ -12,9 +12,6 @@ import jakarta.ws.rs.ext.Provider;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
-/**
- * Handle validation errors (e.g., @NotBlank, @Size violations)
- */
 @Provider
 public class ValidationExceptionHandler implements ExceptionMapper<ConstraintViolationException> {
 

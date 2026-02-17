@@ -18,9 +18,6 @@ import org.jboss.logging.Logger;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Implementation of event publishing operations using Apache Pulsar
- */
 @ApplicationScoped
 public class EventPublisher implements IEventPublisher {
 

@@ -1,4 +1,4 @@
-package com.example.resource;
+package com.example.controller;
 
 import com.example.service.Impl.RedirectService;
 import jakarta.annotation.security.PermitAll;

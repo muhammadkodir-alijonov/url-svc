@@ -12,9 +12,6 @@ import org.jboss.logging.Logger;
 
 import java.util.UUID;
 
-/**
- * Implementation of user management operations
- */
 @ApplicationScoped
 public class UserService implements IUserService {
 

@@ -3,10 +3,6 @@ package com.example.config;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithName;
 
-/**
- * Application configuration
- * Maps to 'app.*' properties in application.yml
- */
 @ConfigMapping(prefix = "app")
 public interface AppConfig {
 

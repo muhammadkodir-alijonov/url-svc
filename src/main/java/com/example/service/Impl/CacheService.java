@@ -14,9 +14,6 @@ import org.jboss.logging.Logger;
 import java.time.Duration;
 import java.util.Optional;
 
-/**
- * Implementation of Redis caching operations
- */
 @ApplicationScoped
 public class CacheService implements ICacheService {
 

@@ -10,10 +10,6 @@ import org.jboss.logging.Logger;
 
 import java.time.Instant;
 
-/**
- * Global exception handler
- * Catches all exceptions and returns consistent JSON error responses
- */
 @Provider
 public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 

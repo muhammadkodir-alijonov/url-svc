@@ -9,12 +9,6 @@ import jakarta.ws.rs.ext.Provider;
 
 import java.io.IOException;
 
-/**
- * CORS Configuration (Alternative to application.yml)
- *
- * Only use this if you need custom CORS logic
- * Otherwise, use quarkus.http.cors in application.yml
- */
 @Provider
 @ApplicationScoped
 @RegisterForReflection

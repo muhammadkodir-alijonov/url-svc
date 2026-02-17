@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of Keycloak authentication operations
- */
 @ApplicationScoped
 public class KeycloakService implements IKeycloakService {
 

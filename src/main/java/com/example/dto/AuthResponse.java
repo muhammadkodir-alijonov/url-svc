@@ -3,10 +3,7 @@ package com.example.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
-/**
- * Response DTO for authentication
- * Contains JWT tokens and minimal user information
- */
+
 @Getter
 @Setter
 @NoArgsConstructor

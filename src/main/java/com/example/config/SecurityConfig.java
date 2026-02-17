@@ -8,9 +8,7 @@ import org.jboss.logging.Logger;
 
 import java.io.IOException;
 
-/**
- * Security configuration and filters
- */
+
 @ApplicationScoped
 public class SecurityConfig {
 

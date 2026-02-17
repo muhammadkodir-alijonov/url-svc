@@ -12,9 +12,6 @@ import org.jboss.logging.Logger;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/**
- * Implementation of QR Code generation operations
- */
 @ApplicationScoped
 public class QRCodeService implements IQRCodeService {
 

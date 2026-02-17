@@ -7,9 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Named;
 
-/**
- * Redis/Valkey configuration
- */
 @ApplicationScoped
 public class RedisConfig {
 

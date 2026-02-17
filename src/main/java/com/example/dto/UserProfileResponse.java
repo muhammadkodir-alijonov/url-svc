@@ -1,11 +1,7 @@
 package com.example.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-/**
- * User profile response DTO
- */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

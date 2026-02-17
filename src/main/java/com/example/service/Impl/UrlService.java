@@ -10,6 +10,7 @@ import com.example.repository.UrlRepository;
 import com.example.repository.UserRepository;
 import com.example.service.IQRCodeService;
 import com.example.service.IUrlService;
+import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -21,11 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import io.smallrye.mutiny.Uni;
-
-/**
- * Implementation of URL shortening operations
- */
 @ApplicationScoped
 public class UrlService implements IUrlService {
 

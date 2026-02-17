@@ -2,10 +2,6 @@ package com.example.dto;
 
 import lombok.*;
 
-/**
- * Request DTO for user registration
- * All fields required for creating a new user
- */
 @Getter
 @Setter
 @NoArgsConstructor
