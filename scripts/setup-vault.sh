@@ -137,4 +137,7 @@ echo "  vault kv get secret/url-shortener/<path>"
 echo ""
 echo "Or via the application using VaultService"
 echo "=============================================="
+echo ""
+echo "================================"
+read -p "Press ENTER to exit..." dummy
 

@@ -25,8 +25,9 @@ public class VaultServiceImpl implements VaultService {
             kvEngine.writeSecret(path, secrets);
             LOG.infof("Secret stored in Vault: path=%s, key=%s", path, key);
         } catch (Exception e) {
-            LOG.errorf(e, "Failed to store secret in Vault: path=%s, key=%s", path, key);
-            throw new RuntimeException("Failed to store secret in Vault", e);
+            LOG.warnf("Failed to store secret in Vault: path=%s, key=%s - %s", path, key, e.getMessage());
+            LOG.debug("Store secret error details:", e);
+            // Don't throw - just log and continue
         }
     }
 
@@ -36,8 +37,9 @@ public class VaultServiceImpl implements VaultService {
             kvEngine.writeSecret(path, secrets);
             LOG.infof("Multiple secrets stored in Vault: path=%s, count=%d", path, secrets.size());
         } catch (Exception e) {
-            LOG.errorf(e, "Failed to store secrets in Vault: path=%s", path);
-            throw new RuntimeException("Failed to store secrets in Vault", e);
+            LOG.warnf("Failed to store secrets in Vault: path=%s - %s", path, e.getMessage());
+            LOG.debug("Store secrets error details:", e);
+            // Don't throw - just log and continue
         }
     }
 

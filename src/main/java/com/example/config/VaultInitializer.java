@@ -32,6 +32,12 @@ public class VaultInitializer {
         LOG.info("Initializing Vault with application secrets...");
 
         try {
+            // Check if Vault service is available
+            if (vaultService == null) {
+                LOG.warn("VaultService is not available - skipping Vault initialization");
+                return;
+            }
+
             // Store database credentials
             storeDatabaseSecrets();
 
@@ -43,7 +49,8 @@ public class VaultInitializer {
 
             LOG.info("Vault initialization completed successfully");
         } catch (Exception e) {
-            LOG.error("Failed to initialize Vault", e);
+            LOG.warnf("Failed to initialize Vault: %s - Application will continue without Vault integration", e.getMessage());
+            LOG.debug("Vault initialization error details:", e);
             // Don't fail startup, just log the error
         }
     }
