@@ -3,13 +3,18 @@
 # Vault Setup Script for URL Shortener
 # This script initializes Vault with all necessary secrets
 
-set -e
+# Function to pause before exit
+pause_before_exit() {
+    echo ""
+    read -p "Press ENTER to exit..." dummy
+}
 
-# Trap errors to prevent window from closing
-trap 'echo ""; echo "❌ Script failed! See error above."; read -p "Press ENTER to exit..." dummy; exit 1' ERR
+# Always pause before exiting
+trap pause_before_exit EXIT
 
 VAULT_ADDR="http://localhost:30200"
 VAULT_TOKEN="dev-root-token"
+VAULT_ADDR_INTERNAL="http://127.0.0.1:8200"  # Vault's internal port inside the pod
 NAMESPACE="url-shortener"
 
 echo "🔐 Setting up Vault for URL Shortener Service"
@@ -17,13 +22,12 @@ echo "=============================================="
 
 # Find the Vault pod
 echo "🔍 Finding Vault pod..."
-VAULT_POD=$(kubectl get pod -n $NAMESPACE -l app=vault -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+VAULT_POD=$(kubectl get pod -n $NAMESPACE -l app=vault -o jsonpath='{.items[0].metadata.name}' 2>&1)
 
-if [ -z "$VAULT_POD" ]; then
+if [ -z "$VAULT_POD" ] || [ "$VAULT_POD" == "error"* ]; then
     echo "❌ ERROR: Vault pod not found!"
     echo "   Make sure Vault is deployed: kubectl get pods -n $NAMESPACE -l app=vault"
-    echo ""
-    read -p "Press ENTER to exit..." dummy
+    echo "   Error: $VAULT_POD"
     exit 1
 fi
 
@@ -31,10 +35,16 @@ echo "✅ Found Vault pod: $VAULT_POD"
 
 # Function to run vault commands in the pod
 vault_exec() {
-    kubectl exec -n $NAMESPACE $VAULT_POD -- vault "$@"
+    echo "   Running: vault $@"
+    kubectl exec -n $NAMESPACE $VAULT_POD -- env VAULT_ADDR="$VAULT_ADDR_INTERNAL" VAULT_TOKEN="$VAULT_TOKEN" vault "$@"
+    if [ $? -ne 0 ]; then
+        echo "   ❌ Command failed!"
+        return 1
+    fi
+    return 0
 }
 
-# Export Vault environment variables for pod
+# Export Vault environment variables
 export VAULT_ADDR
 export VAULT_TOKEN
 
@@ -51,8 +61,6 @@ while true; do
         echo "❌ Timeout waiting for Vault pod to be ready"
         echo "   Pod status: $POD_STATUS"
         echo "   Check with: kubectl get pods -n $NAMESPACE -l app=vault"
-        echo ""
-        read -p "Press ENTER to exit..." dummy
         exit 1
     fi
     sleep 2
@@ -65,7 +73,7 @@ echo "✅ Vault pod is ready!"
 # Enable KV secrets engine v2
 echo ""
 echo "📝 Enabling KV secrets engine v2..."
-vault_exec secrets enable -version=2 -path=secret kv 2>/dev/null || echo "   KV engine already enabled"
+vault_exec secrets enable -version=2 -path=secret kv 2>/dev/null || echo "   KV engine already enabled (or failed - continuing anyway)"
 
 # Store Database Secrets
 echo ""
@@ -168,6 +176,3 @@ echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shor
 echo ""
 echo "Or via the application using VaultService"
 echo "=============================================="
-echo ""
-echo "================================"
-read -p "Press ENTER to exit..." dummy
