@@ -18,9 +18,9 @@ import org.jboss.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "User Management", description = "User synchronization and profile")
-public class UserResource {
+public class UserController {
 
-    private static final Logger LOG = Logger.getLogger(UserResource.class);
+    private static final Logger LOG = Logger.getLogger(UserController.class);
 
     @Inject
     Instance<JsonWebToken> jwtInstance;

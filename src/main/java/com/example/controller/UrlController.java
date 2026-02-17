@@ -18,9 +18,9 @@ import org.jboss.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "URL Management", description = "Endpoints for creating and managing short URLs")
-public class UrlResource {
+public class UrlController {
 
-    private static final Logger LOG = Logger.getLogger(UrlResource.class);
+    private static final Logger LOG = Logger.getLogger(UrlController.class);
 
     @Inject
     IUrlService urlService;

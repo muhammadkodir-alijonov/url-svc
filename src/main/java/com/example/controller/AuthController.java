@@ -23,9 +23,9 @@ import org.jboss.logging.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Authentication", description = "User registration and authentication")
-public class AuthResource {
+public class AuthController {
 
-    private static final Logger LOG = Logger.getLogger(AuthResource.class);
+    private static final Logger LOG = Logger.getLogger(AuthController.class);
 
     @Inject
     IKeycloakService keycloakService;

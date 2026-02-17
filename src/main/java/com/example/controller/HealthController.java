@@ -14,7 +14,7 @@ import java.util.Map;
 @Path("/health")
 @Produces(MediaType.APPLICATION_JSON)
 @Tag(name = "Health", description = "Health check endpoints")
-public class HealthResource {
+public class HealthController {
 
     @GET
     public Response health() {

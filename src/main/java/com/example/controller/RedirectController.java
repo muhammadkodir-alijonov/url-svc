@@ -19,9 +19,9 @@ import java.net.URI;
 
 @Path("/")
 @Tag(name = "Redirect", description = "Public redirect endpoint")
-public class RedirectResource {
+public class RedirectController {
 
-    private static final Logger LOG = Logger.getLogger(RedirectResource.class);
+    private static final Logger LOG = Logger.getLogger(RedirectController.class);
 
     @Inject
     RedirectService redirectService;
