@@ -5,41 +5,72 @@
 
 set -e
 
+# Trap errors to prevent window from closing
+trap 'echo ""; echo "❌ Script failed! See error above."; read -p "Press ENTER to exit..." dummy; exit 1' ERR
+
 VAULT_ADDR="http://localhost:30200"
 VAULT_TOKEN="dev-root-token"
+NAMESPACE="url-shortener"
 
 echo "🔐 Setting up Vault for URL Shortener Service"
 echo "=============================================="
 
-# Export Vault environment variables
+# Find the Vault pod
+echo "🔍 Finding Vault pod..."
+VAULT_POD=$(kubectl get pod -n $NAMESPACE -l app=vault -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+
+if [ -z "$VAULT_POD" ]; then
+    echo "❌ ERROR: Vault pod not found!"
+    echo "   Make sure Vault is deployed: kubectl get pods -n $NAMESPACE -l app=vault"
+    echo ""
+    read -p "Press ENTER to exit..." dummy
+    exit 1
+fi
+
+echo "✅ Found Vault pod: $VAULT_POD"
+
+# Function to run vault commands in the pod
+vault_exec() {
+    kubectl exec -n $NAMESPACE $VAULT_POD -- vault "$@"
+}
+
+# Export Vault environment variables for pod
 export VAULT_ADDR
 export VAULT_TOKEN
 
-# Wait for Vault to be ready
-echo "⏳ Waiting for Vault to be ready..."
+# Wait for Vault pod to be ready
+echo "⏳ Waiting for Vault pod to be ready..."
 timeout=60
 elapsed=0
-while ! curl -s -f "$VAULT_ADDR/v1/sys/health" > /dev/null 2>&1; do
+while true; do
+    POD_STATUS=$(kubectl get pod -n $NAMESPACE $VAULT_POD -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+    if [ "$POD_STATUS" = "Running" ]; then
+        break
+    fi
     if [ $elapsed -ge $timeout ]; then
-        echo "❌ Timeout waiting for Vault to be ready"
+        echo "❌ Timeout waiting for Vault pod to be ready"
+        echo "   Pod status: $POD_STATUS"
+        echo "   Check with: kubectl get pods -n $NAMESPACE -l app=vault"
+        echo ""
+        read -p "Press ENTER to exit..." dummy
         exit 1
     fi
     sleep 2
     elapsed=$((elapsed + 2))
-    echo "   Still waiting... (${elapsed}s)"
+    echo "   Still waiting... (${elapsed}s) - Status: $POD_STATUS"
 done
 
-echo "✅ Vault is ready!"
+echo "✅ Vault pod is ready!"
 
 # Enable KV secrets engine v2
 echo ""
 echo "📝 Enabling KV secrets engine v2..."
-vault secrets enable -version=2 -path=secret kv 2>/dev/null || echo "   KV engine already enabled"
+vault_exec secrets enable -version=2 -path=secret kv 2>/dev/null || echo "   KV engine already enabled"
 
 # Store Database Secrets
 echo ""
 echo "🗄️  Storing Database secrets..."
-vault kv put secret/url-shortener/database/postgres \
+vault_exec kv put secret/url-shortener/database/postgres \
     username="admin" \
     password="admin123" \
     host="localhost" \
@@ -50,7 +81,7 @@ vault kv put secret/url-shortener/database/postgres \
 # Store Keycloak Secrets
 echo ""
 echo "🔑 Storing Keycloak secrets..."
-vault kv put secret/url-shortener/keycloak/config \
+vault_exec kv put secret/url-shortener/keycloak/config \
     server_url="http://localhost:30180" \
     realm="url-shortener" \
     client_id="url-shortener-client" \
@@ -62,7 +93,7 @@ vault kv put secret/url-shortener/keycloak/config \
 # Store Redis Secrets
 echo ""
 echo "📮 Storing Redis secrets..."
-vault kv put secret/url-shortener/redis/config \
+vault_exec kv put secret/url-shortener/redis/config \
     host="localhost" \
     port="30379" \
     url="redis://localhost:30379"
@@ -70,7 +101,7 @@ vault kv put secret/url-shortener/redis/config \
 # Store Pulsar Secrets
 echo ""
 echo "📡 Storing Pulsar secrets..."
-vault kv put secret/url-shortener/pulsar/config \
+vault_exec kv put secret/url-shortener/pulsar/config \
     broker_url="pulsar://localhost:30650" \
     admin_url="http://localhost:30081" \
     topic="url-shortener-clicks"
@@ -78,7 +109,7 @@ vault kv put secret/url-shortener/pulsar/config \
 # Store APISIX Secrets
 echo ""
 echo "🚪 Storing APISIX secrets..."
-vault kv put secret/url-shortener/apisix/config \
+vault_exec kv put secret/url-shortener/apisix/config \
     gateway_url="http://localhost:30900" \
     admin_url="http://localhost:30901" \
     dashboard_url="http://localhost:30910" \
@@ -89,14 +120,14 @@ vault kv put secret/url-shortener/apisix/config \
 # Store Vault Secrets
 echo ""
 echo "🔐 Storing Vault secrets..."
-vault kv put secret/url-shortener/vault/config \
+vault_exec kv put secret/url-shortener/vault/config \
     url="http://localhost:30200" \
     token="dev-root-token"
 
 # Store Application Secrets
 echo ""
 echo "⚙️  Storing Application secrets..."
-vault kv put secret/url-shortener/application/config \
+vault_exec kv put secret/url-shortener/application/config \
     base_url="http://localhost:3000" \
     short_code_length="7" \
     short_code_max_attempts="10" \
@@ -110,34 +141,33 @@ echo "✅ Verifying secrets..."
 echo ""
 
 echo "Database secrets:"
-vault kv get secret/url-shortener/database/postgres
+vault_exec kv get secret/url-shortener/database/postgres
 
 echo ""
 echo "Keycloak secrets:"
-vault kv get secret/url-shortener/keycloak/config
+vault_exec kv get secret/url-shortener/keycloak/config
 
 echo ""
 echo "Redis secrets:"
-vault kv get secret/url-shortener/redis/config
+vault_exec kv get secret/url-shortener/redis/config
 
 echo ""
 echo "Pulsar secrets:"
-vault kv get secret/url-shortener/pulsar/config
+vault_exec kv get secret/url-shortener/pulsar/config
 
 echo ""
 echo "APISIX secrets:"
-vault kv get secret/url-shortener/apisix/config
+vault_exec kv get secret/url-shortener/apisix/config
 
 echo ""
 echo "=============================================="
 echo "✅ Vault setup completed successfully!"
 echo ""
 echo "You can now access secrets using:"
-echo "  vault kv get secret/url-shortener/<path>"
+echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/<path>"
 echo ""
 echo "Or via the application using VaultService"
 echo "=============================================="
 echo ""
 echo "================================"
 read -p "Press ENTER to exit..." dummy
-
