@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
@@ -26,7 +25,6 @@ public class VaultAdminController {
     @GET
     @Path("/{path}/{key}")
     @RolesAllowed("admin")
-    @Operation(summary = "Get a secret from Vault", description = "Retrieve a specific secret by path and key")
     public Response getSecret(@PathParam("path") String path, @PathParam("key") String key) {
         LOG.infof("Admin retrieving secret: path=%s, key=%s", path, key);
 
@@ -47,7 +45,6 @@ public class VaultAdminController {
     @GET
     @Path("/{path}")
     @RolesAllowed("admin")
-    @Operation(summary = "Get all secrets from a path", description = "Retrieve all secrets from a specific path")
     public Response getSecrets(@PathParam("path") String path) {
         LOG.infof("Admin retrieving all secrets: path=%s", path);
 
@@ -63,7 +60,6 @@ public class VaultAdminController {
     @POST
     @Path("/{path}")
     @RolesAllowed("admin")
-    @Operation(summary = "Store secrets in Vault", description = "Store one or more secrets at a specific path")
     public Response storeSecrets(@PathParam("path") String path, Map<String, String> secrets) {
         LOG.infof("Admin storing secrets: path=%s, count=%d", path, secrets.size());
 
@@ -79,7 +75,6 @@ public class VaultAdminController {
     @DELETE
     @Path("/{path}")
     @RolesAllowed("admin")
-    @Operation(summary = "Delete secrets from Vault", description = "Delete all secrets at a specific path")
     public Response deleteSecret(@PathParam("path") String path) {
         LOG.infof("Admin deleting secret: path=%s", path);
 
@@ -93,7 +88,6 @@ public class VaultAdminController {
 
     @GET
     @Path("/health")
-    @Operation(summary = "Check Vault connection", description = "Verify Vault is accessible")
     public Response healthCheck() {
         try {
             // Try to read a test secret to verify connection
