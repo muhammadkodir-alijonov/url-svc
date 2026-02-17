@@ -75,104 +75,157 @@ echo ""
 echo "📝 Enabling KV secrets engine v2..."
 vault_exec secrets enable -version=2 -path=secret kv 2>/dev/null || echo "   KV engine already enabled (or failed - continuing anyway)"
 
-# Store Database Secrets
-echo ""
-echo "🗄️  Storing Database secrets..."
-vault_exec kv put secret/url-shortener/database/postgres \
-    username="admin" \
-    password="admin123" \
-    host="localhost" \
-    port="30432" \
-    database="url_shortener" \
-    jdbc_url="jdbc:postgresql://localhost:30432/url_shortener"
+# Function to store secrets for a specific environment
+store_secrets() {
+    local ENV=$1
+    local DB_HOST=$2
+    local DB_PORT=$3
+    local DB_PASSWORD=$4
+    local REDIS_HOST=$5
+    local REDIS_PORT=$6
+    local KEYCLOAK_URL=$7
+    local PULSAR_BROKER=$8
+    local PULSAR_ADMIN=$9
+    local APISIX_GATEWAY=${10}
+    local VAULT_URL=${11}
+    local BASE_URL=${12}
 
-# Store Keycloak Secrets
-echo ""
-echo "🔑 Storing Keycloak secrets..."
-vault_exec kv put secret/url-shortener/keycloak/config \
-    server_url="http://localhost:30180" \
-    realm="url-shortener" \
-    client_id="url-shortener-client" \
-    admin_username="admin" \
-    admin_password="admin" \
-    auth_server_url="http://localhost:30180/realms/url-shortener" \
-    certs_url="http://localhost:30180/realms/url-shortener/protocol/openid-connect/certs"
+    echo ""
+    echo "=============================================="
+    echo "Setting up secrets for: $ENV environment"
+    echo "=============================================="
 
-# Store Redis Secrets
-echo ""
-echo "📮 Storing Redis secrets..."
-vault_exec kv put secret/url-shortener/redis/config \
-    host="localhost" \
-    port="30379" \
-    url="redis://localhost:30379"
+    # Store Database Secrets
+    echo ""
+    echo "🗄️  Storing Database secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/database/postgres \
+        username="admin" \
+        password="$DB_PASSWORD" \
+        host="$DB_HOST" \
+        port="$DB_PORT" \
+        database="url_shortener" \
+        jdbc_url="jdbc:postgresql://$DB_HOST:$DB_PORT/url_shortener"
 
-# Store Pulsar Secrets
-echo ""
-echo "📡 Storing Pulsar secrets..."
-vault_exec kv put secret/url-shortener/pulsar/config \
-    broker_url="pulsar://localhost:30650" \
-    admin_url="http://localhost:30081" \
-    topic="url-shortener-clicks"
+    # Store Keycloak Secrets
+    echo ""
+    echo "🔑 Storing Keycloak secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/keycloak/config \
+        server_url="$KEYCLOAK_URL" \
+        realm="url-shortener" \
+        client_id="url-shortener-client" \
+        admin_username="admin" \
+        admin_password="admin" \
+        auth_server_url="$KEYCLOAK_URL/realms/url-shortener" \
+        certs_url="$KEYCLOAK_URL/realms/url-shortener/protocol/openid-connect/certs"
 
-# Store APISIX Secrets
-echo ""
-echo "🚪 Storing APISIX secrets..."
-vault_exec kv put secret/url-shortener/apisix/config \
-    gateway_url="http://localhost:30900" \
-    admin_url="http://localhost:30901" \
-    dashboard_url="http://localhost:30910" \
-    admin_key="admin-api-key" \
-    dashboard_username="admin" \
-    dashboard_password="admin"
+    # Store Redis Secrets
+    echo ""
+    echo "📮 Storing Redis secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/redis/config \
+        host="$REDIS_HOST" \
+        port="$REDIS_PORT" \
+        url="redis://$REDIS_HOST:$REDIS_PORT"
 
-# Store Vault Secrets
-echo ""
-echo "🔐 Storing Vault secrets..."
-vault_exec kv put secret/url-shortener/vault/config \
-    url="http://localhost:30200" \
-    token="dev-root-token"
+    # Store Pulsar Secrets
+    echo ""
+    echo "📡 Storing Pulsar secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/pulsar/config \
+        broker_url="$PULSAR_BROKER" \
+        admin_url="$PULSAR_ADMIN" \
+        topic="url-shortener-clicks"
 
-# Store Application Secrets
-echo ""
-echo "⚙️  Storing Application secrets..."
-vault_exec kv put secret/url-shortener/application/config \
-    base_url="http://localhost:3000" \
-    short_code_length="7" \
-    short_code_max_attempts="10" \
-    cache_url_ttl="3600" \
-    rate_limit_shorten="100" \
-    rate_limit_redirect="1000"
+    # Store APISIX Secrets
+    echo ""
+    echo "🚪 Storing APISIX secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/apisix/config \
+        gateway_url="$APISIX_GATEWAY" \
+        admin_url="http://localhost:30901" \
+        dashboard_url="http://localhost:30910" \
+        admin_key="admin-api-key" \
+        dashboard_username="admin" \
+        dashboard_password="admin"
+
+    # Store Vault Secrets
+    echo ""
+    echo "🔐 Storing Vault secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/vault/config \
+        url="$VAULT_URL" \
+        token="dev-root-token"
+
+    # Store Application Secrets
+    echo ""
+    echo "⚙️  Storing Application secrets..."
+    vault_exec kv put secret/url-shortener/$ENV/application/config \
+        base_url="$BASE_URL" \
+        short_code_length="7" \
+        short_code_max_attempts="10" \
+        cache_url_ttl="3600" \
+        rate_limit_shorten="100" \
+        rate_limit_redirect="1000"
+
+    echo ""
+    echo "✅ $ENV secrets stored successfully!"
+}
+
+# Store DEV environment secrets
+store_secrets "dev" \
+    "localhost" "30432" "admin123" \
+    "localhost" "30379" \
+    "http://localhost:30180" \
+    "pulsar://localhost:30650" "http://localhost:30081" \
+    "http://localhost:30900" \
+    "http://localhost:30200" \
+    "http://localhost:3000"
+
+# Store PROD environment secrets (with production values)
+store_secrets "prod" \
+    "postgres.url-shortener.svc.cluster.local" "5432" "ProductionP@ssw0rd!" \
+    "valkey.url-shortener.svc.cluster.local" "6379" \
+    "http://keycloak.url-shortener.svc.cluster.local:8080" \
+    "pulsar://pulsar.url-shortener.svc.cluster.local:6650" "http://pulsar.url-shortener.svc.cluster.local:8080" \
+    "http://apisix-gateway.url-shortener.svc.cluster.local:9080" \
+    "http://vault.url-shortener.svc.cluster.local:8200" \
+    "https://short.yourdomain.com"
 
 # Verify secrets
 echo ""
-echo "✅ Verifying secrets..."
-echo ""
-
-echo "Database secrets:"
-vault_exec kv get secret/url-shortener/database/postgres
+echo "=============================================="
+echo "✅ Verifying DEV secrets..."
+echo "=============================================="
 
 echo ""
-echo "Keycloak secrets:"
-vault_exec kv get secret/url-shortener/keycloak/config
+echo "DEV - Database secrets:"
+vault_exec kv get secret/url-shortener/dev/database/postgres
 
 echo ""
-echo "Redis secrets:"
-vault_exec kv get secret/url-shortener/redis/config
+echo "DEV - Redis secrets:"
+vault_exec kv get secret/url-shortener/dev/redis/config
 
 echo ""
-echo "Pulsar secrets:"
-vault_exec kv get secret/url-shortener/pulsar/config
+echo "=============================================="
+echo "✅ Verifying PROD secrets..."
+echo "=============================================="
 
 echo ""
-echo "APISIX secrets:"
-vault_exec kv get secret/url-shortener/apisix/config
+echo "PROD - Database secrets:"
+vault_exec kv get secret/url-shortener/prod/database/postgres
+
+echo ""
+echo "PROD - Redis secrets:"
+vault_exec kv get secret/url-shortener/prod/redis/config
 
 echo ""
 echo "=============================================="
 echo "✅ Vault setup completed successfully!"
 echo ""
-echo "You can now access secrets using:"
-echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/<path>"
+echo "Secrets are organized by environment:"
 echo ""
-echo "Or via the application using VaultService"
+echo "  DEV:  secret/url-shortener/dev/<service>/config"
+echo "  PROD: secret/url-shortener/prod/<service>/config"
+echo ""
+echo "Access secrets using:"
+echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/dev/<path>"
+echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/prod/<path>"
+echo ""
+echo "Or via the application using VaultService with environment prefix"
 echo "=============================================="

@@ -19,6 +19,9 @@ public class VaultInitializer {
     @Inject
     VaultService vaultService;
 
+    @ConfigProperty(name = "app.environment", defaultValue = "dev")
+    String environment;
+
     @ConfigProperty(name = "quarkus.datasource.username")
     String dbUsername;
 
@@ -29,7 +32,7 @@ public class VaultInitializer {
     String keycloakCertsUrl;
 
     void onStart(@Observes StartupEvent ev) {
-        LOG.info("Initializing Vault with application secrets...");
+        LOG.infof("Initializing Vault with application secrets for environment: %s", environment);
 
         try {
             // Check if Vault service is available
@@ -47,7 +50,7 @@ public class VaultInitializer {
             // Store application secrets
             storeApplicationSecrets();
 
-            LOG.info("Vault initialization completed successfully");
+            LOG.infof("Vault initialization completed successfully for environment: %s", environment);
         } catch (Exception e) {
             LOG.warnf("Failed to initialize Vault: %s - Application will continue without Vault integration", e.getMessage());
             LOG.debug("Vault initialization error details:", e);
