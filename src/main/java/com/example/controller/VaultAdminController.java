@@ -1,4 +1,4 @@
-package com.example.resource;
+package com.example.controller;
 
 import com.example.service.VaultService;
 import jakarta.annotation.security.RolesAllowed;
@@ -16,9 +16,9 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Vault Admin", description = "Vault secret management endpoints")
-public class VaultAdminResource {
+public class VaultAdminController {
 
-    private static final Logger LOG = Logger.getLogger(VaultAdminResource.class);
+    private static final Logger LOG = Logger.getLogger(VaultAdminController.class);
 
     @Inject
     VaultService vaultService;
