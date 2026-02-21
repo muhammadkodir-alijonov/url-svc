@@ -1,5 +1,6 @@
 package com.example.service.Impl;
 
+import com.example.config.AppConfig;
 import com.example.service.VaultService;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,14 +20,14 @@ public class VaultServiceImpl implements VaultService {
     @Inject
     VaultKVSecretEngine kvEngine;
 
+    @Inject
+    AppConfig appConfig;
+
     @ConfigProperty(name = "app.environment", defaultValue = "dev")
     String environment;
 
-    /**
-     * Build full path with environment prefix
-     */
     private String buildPath(String path) {
-        return String.format("%s/%s/%s", BASE_PATH, environment, path);
+        return String.format("%s/%s/%s", BASE_PATH, appConfig.environment(), path);
     }
 
     @Override
@@ -40,7 +41,6 @@ public class VaultServiceImpl implements VaultService {
         } catch (Exception e) {
             LOG.warnf("Failed to store secret in Vault: path=%s, key=%s - %s", path, key, e.getMessage());
             LOG.debug("Store secret error details:", e);
-            // Don't throw - just log and continue
         }
     }
 
@@ -53,7 +53,6 @@ public class VaultServiceImpl implements VaultService {
         } catch (Exception e) {
             LOG.warnf("Failed to store secrets in Vault: path=%s - %s", path, e.getMessage());
             LOG.debug("Store secrets error details:", e);
-            // Don't throw - just log and continue
         }
     }
 

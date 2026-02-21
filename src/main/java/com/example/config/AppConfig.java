@@ -1,10 +1,13 @@
 package com.example.config;
 
 import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 import io.smallrye.config.WithName;
 
 @ConfigMapping(prefix = "app")
 public interface AppConfig {
+    @WithDefault("dev")
+    String environment();
 
     @WithName("base-url")
     String baseUrl();
