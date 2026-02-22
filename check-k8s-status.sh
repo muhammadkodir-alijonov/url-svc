@@ -7,19 +7,19 @@ echo "================================"
 
 echo ""
 echo "Namespace:"
-kubectl get namespace url-shortener
+kubectl get namespace url-shorten
 
 echo ""
 echo "All Resources:"
-kubectl get all -n url-shortener
+kubectl get all -n url-shorten
 
 echo ""
 echo "ConfigMaps:"
-kubectl get configmap -n url-shortener
+kubectl get configmap -n url-shorten
 
 echo ""
 echo "Persistent Volume Claims:"
-kubectl get pvc -n url-shortener
+kubectl get pvc -n url-shorten
 
 echo ""
 echo "================================"
@@ -29,44 +29,44 @@ echo "================================"
 # PostgreSQL
 echo ""
 echo "PostgreSQL:"
-kubectl get pod -n url-shortener -l app=postgres -o wide
-pgPod=$(kubectl get pod -n url-shortener -l app=postgres -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+kubectl get pod -n url-shorten -l app=postgres -o wide
+pgPod=$(kubectl get pod -n url-shorten -l app=postgres -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 if [ -n "$pgPod" ]; then
     echo -n "   Status: "
-    kubectl get pod -n url-shortener $pgPod -o jsonpath='{.status.phase}'
+    kubectl get pod -n url-shorten $pgPod -o jsonpath='{.status.phase}'
     echo ""
 fi
 
 # Valkey
 echo ""
 echo "Valkey:"
-kubectl get pod -n url-shortener -l app=valkey -o wide
-valkeyPod=$(kubectl get pod -n url-shortener -l app=valkey -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+kubectl get pod -n url-shorten -l app=valkey -o wide
+valkeyPod=$(kubectl get pod -n url-shorten -l app=valkey -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 if [ -n "$valkeyPod" ]; then
     echo -n "   Status: "
-    kubectl get pod -n url-shortener $valkeyPod -o jsonpath='{.status.phase}'
+    kubectl get pod -n url-shorten $valkeyPod -o jsonpath='{.status.phase}'
     echo ""
 fi
 
 # Pulsar
 echo ""
 echo "Pulsar:"
-kubectl get pod -n url-shortener -l app=pulsar -o wide
-pulsarPod=$(kubectl get pod -n url-shortener -l app=pulsar -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+kubectl get pod -n url-shorten -l app=pulsar -o wide
+pulsarPod=$(kubectl get pod -n url-shorten -l app=pulsar -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 if [ -n "$pulsarPod" ]; then
     echo -n "   Status: "
-    kubectl get pod -n url-shortener $pulsarPod -o jsonpath='{.status.phase}'
+    kubectl get pod -n url-shorten $pulsarPod -o jsonpath='{.status.phase}'
     echo ""
 fi
 
 # Keycloak
 echo ""
 echo "Keycloak:"
-kubectl get pod -n url-shortener -l app=keycloak -o wide
-keycloakPod=$(kubectl get pod -n url-shortener -l app=keycloak -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+kubectl get pod -n url-shorten -l app=keycloak -o wide
+keycloakPod=$(kubectl get pod -n url-shorten -l app=keycloak -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 if [ -n "$keycloakPod" ]; then
     echo -n "   Status: "
-    kubectl get pod -n url-shortener $keycloakPod -o jsonpath='{.status.phase}'
+    kubectl get pod -n url-shorten $keycloakPod -o jsonpath='{.status.phase}'
     echo ""
 fi
 
@@ -74,7 +74,7 @@ echo ""
 echo "================================"
 echo "Service Endpoints:"
 echo "================================"
-kubectl get services -n url-shortener
+kubectl get services -n url-shorten
 
 echo ""
 echo "================================"
@@ -92,11 +92,11 @@ echo "   APISIX Dashboard: http://localhost:30910"
 
 echo ""
 echo "Useful Commands:"
-echo "   Watch pods:        kubectl get pods -n url-shortener -w"
-echo "   Describe pod:      kubectl describe pod POD_NAME -n url-shortener"
-echo "   View logs:         kubectl logs POD_NAME -n url-shortener"
-echo "   Shell into pod:    kubectl exec -it POD_NAME -n url-shortener -- /bin/sh"
-echo "   Delete all:        kubectl delete namespace url-shortener"
+echo "   Watch pods:        kubectl get pods -n url-shorten -w"
+echo "   Describe pod:      kubectl describe pod POD_NAME -n url-shorten"
+echo "   View logs:         kubectl logs POD_NAME -n url-shorten"
+echo "   Shell into pod:    kubectl exec -it POD_NAME -n url-shorten -- /bin/sh"
+echo "   Delete all:        kubectl delete namespace url-shorten"
 
 echo ""
 echo "================================"
