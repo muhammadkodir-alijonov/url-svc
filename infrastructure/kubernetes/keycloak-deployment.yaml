@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: keycloak-config
-  namespace: url-shortener
+  namespace: url-shorten
 data:
   KEYCLOAK_ADMIN: admin
   KEYCLOAK_ADMIN_PASSWORD: admin123
@@ -20,7 +20,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: keycloak
-  namespace: url-shortener
+  namespace: url-shorten
   labels:
     app: keycloak
 spec:
@@ -37,7 +37,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: keycloak
-  namespace: url-shortener
+  namespace: url-shorten
 spec:
   replicas: 1
   selector:
