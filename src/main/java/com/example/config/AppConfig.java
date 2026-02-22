@@ -10,6 +10,7 @@ public interface AppConfig {
     String environment();
 
     @WithName("base-url")
+    @WithDefault("http://localhost:3000")
     String baseUrl();
 
     ShortCodeConfig shortCode();
@@ -25,9 +26,11 @@ public interface AppConfig {
      */
     interface ShortCodeConfig {
 
+        @WithDefault("7")
         int length();
 
         @WithName("max-attempts")
+        @WithDefault("10")
         int maxAttempts();
     }
 
@@ -37,6 +40,7 @@ public interface AppConfig {
     interface CacheConfig {
 
         @WithName("url-ttl")
+        @WithDefault("3600")
         int urlTtl();
     }
 
@@ -45,17 +49,19 @@ public interface AppConfig {
      */
     interface RateLimitConfig {
 
+        @WithDefault("100")
         int shorten();
 
+        @WithDefault("1000")
         int redirect();
     }
 
     /**
      * Pulsar settings
      */
-    @ConfigMapping(prefix = "app.pulsar")
     interface PulsarConfig {
 
+        @WithDefault("url-shorten-clicks")
         String topic();
     }
 }

@@ -131,19 +131,20 @@ store_secrets() {
     echo "📡 Storing Pulsar secrets..."
     vault_exec kv put secret/url-shorten/$ENV/pulsar/config \
         quarkus.pulsar.client.serviceUrl="$PULSAR_BROKER" \
-        admin_url="$PULSAR_ADMIN" \
-        app.pulsar.topic="url-shorten-clicks"
+        admin_url="$PULSAR_ADMIN"
 
     # Store Application Secrets (with proper property names)
     echo ""
     echo "⚙️  Storing Application secrets..."
     vault_exec kv put secret/url-shorten/$ENV/application/config \
+        app.environment="$ENV" \
         app.base-url="$BASE_URL" \
         app.short-code.length="7" \
         app.short-code.max-attempts="10" \
         app.cache.url-ttl="3600" \
         app.rate-limit.shorten="100" \
-        app.rate-limit.redirect="1000"
+        app.rate-limit.redirect="1000" \
+        app.pulsar.topic="url-shorten-clicks"
 
     echo ""
     echo "✅ $ENV secrets stored successfully!"
