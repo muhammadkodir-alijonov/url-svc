@@ -1,5 +1,19 @@
 package com.example.config;
 
+/**
+ * DISABLED - No longer needed
+ *
+ * Vault secrets are now initialized via scripts/setup-vault.sh
+ * Configuration is automatically loaded from Vault using Quarkus Vault Config Source
+ *
+ * Path structure in Vault:
+ * - secret/url-shortener/dev/database/postgres
+ * - secret/url-shortener/dev/keycloak/config
+ * - secret/url-shortener/dev/redis/config
+ * - secret/url-shortener/dev/pulsar/config
+ * - secret/url-shortener/dev/application/config
+ */
+/*
 import com.example.service.VaultService;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -106,4 +120,4 @@ public class VaultInitializer {
         LOG.info("Application secrets stored in Vault");
     }
 }
-
+*/

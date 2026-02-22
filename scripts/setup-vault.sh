@@ -95,73 +95,55 @@ store_secrets() {
     echo "Setting up secrets for: $ENV environment"
     echo "=============================================="
 
-    # Store Database Secrets
+    # Store Database Secrets (with Quarkus property names)
     echo ""
     echo "🗄️  Storing Database secrets..."
     vault_exec kv put secret/url-shortener/$ENV/database/postgres \
-        username="admin" \
-        password="$DB_PASSWORD" \
+        quarkus.datasource.username="admin" \
+        quarkus.datasource.password="$DB_PASSWORD" \
         host="$DB_HOST" \
         port="$DB_PORT" \
         database="url_shortener" \
-        jdbc_url="jdbc:postgresql://$DB_HOST:$DB_PORT/url_shortener"
+        quarkus.datasource.jdbc.url="jdbc:postgresql://$DB_HOST:$DB_PORT/url_shortener"
 
-    # Store Keycloak Secrets
+    # Store Keycloak Secrets (with Quarkus property names)
     echo ""
     echo "🔑 Storing Keycloak secrets..."
     vault_exec kv put secret/url-shortener/$ENV/keycloak/config \
-        server_url="$KEYCLOAK_URL" \
-        realm="url-shortener" \
-        client_id="url-shortener-client" \
+        quarkus.oidc.auth-server-url="$KEYCLOAK_URL/realms/url-shortener" \
+        quarkus.oidc.client-id="url-shortener-client" \
+        quarkus.oidc.credentials.secret="**my sec keyyyy**" \
+        mp.jwt.verify.issuer="$KEYCLOAK_URL/realms/url-shortener" \
+        mp.jwt.verify.publickey.location="$KEYCLOAK_URL/realms/url-shortener/protocol/openid-connect/certs" \
         admin_username="admin" \
-        admin_password="admin" \
-        auth_server_url="$KEYCLOAK_URL/realms/url-shortener" \
-        certs_url="$KEYCLOAK_URL/realms/url-shortener/protocol/openid-connect/certs"
+        admin_password="admin"
 
-    # Store Redis Secrets
+    # Store Redis Secrets (with Quarkus property names)
     echo ""
     echo "📮 Storing Redis secrets..."
     vault_exec kv put secret/url-shortener/$ENV/redis/config \
+        quarkus.redis.hosts="redis://$REDIS_HOST:$REDIS_PORT" \
         host="$REDIS_HOST" \
-        port="$REDIS_PORT" \
-        url="redis://$REDIS_HOST:$REDIS_PORT"
+        port="$REDIS_PORT"
 
-    # Store Pulsar Secrets
+    # Store Pulsar Secrets (with Quarkus property names)
     echo ""
     echo "📡 Storing Pulsar secrets..."
     vault_exec kv put secret/url-shortener/$ENV/pulsar/config \
-        broker_url="$PULSAR_BROKER" \
+        quarkus.pulsar.client.serviceUrl="$PULSAR_BROKER" \
         admin_url="$PULSAR_ADMIN" \
-        topic="url-shortener-clicks"
+        app.pulsar.topic="url-shortener-clicks"
 
-    # Store APISIX Secrets
-    echo ""
-    echo "🚪 Storing APISIX secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/apisix/config \
-        gateway_url="$APISIX_GATEWAY" \
-        admin_url="http://localhost:30901" \
-        dashboard_url="http://localhost:30910" \
-        admin_key="admin-api-key" \
-        dashboard_username="admin" \
-        dashboard_password="admin"
-
-    # Store Vault Secrets
-    echo ""
-    echo "🔐 Storing Vault secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/vault/config \
-        url="$VAULT_URL" \
-        token="dev-root-token"
-
-    # Store Application Secrets
+    # Store Application Secrets (with proper property names)
     echo ""
     echo "⚙️  Storing Application secrets..."
     vault_exec kv put secret/url-shortener/$ENV/application/config \
-        base_url="$BASE_URL" \
-        short_code_length="7" \
-        short_code_max_attempts="10" \
-        cache_url_ttl="3600" \
-        rate_limit_shorten="100" \
-        rate_limit_redirect="1000"
+        app.base-url="$BASE_URL" \
+        app.short-code.length="7" \
+        app.short-code.max-attempts="10" \
+        app.cache.url-ttl="3600" \
+        app.rate-limit.shorten="100" \
+        app.rate-limit.redirect="1000"
 
     echo ""
     echo "✅ $ENV secrets stored successfully!"

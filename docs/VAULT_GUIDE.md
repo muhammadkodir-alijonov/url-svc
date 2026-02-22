@@ -2,11 +2,49 @@
 
 ## Overview
 
-This application uses HashiCorp Vault to securely store and manage sensitive configuration data such as:
-- Database credentials
-- Keycloak/OIDC settings
-- API keys and tokens
-- Service endpoints
+The URL Shortener application uses HashiCorp Vault to securely store and manage sensitive configuration data. **Secrets are automatically loaded from Vault at application startup** using the Quarkus Vault extension.
+
+### Key Benefits:
+- **Centralized Secret Management**: All secrets in one place
+- **Automatic Configuration**: No manual secret injection needed
+- **Environment Separation**: Different secrets for dev/prod
+- **Dynamic Updates**: Secrets can be rotated without redeployment
+
+## How It Works
+
+### 1. Vault Storage Structure
+
+Secrets are organized by environment:
+```
+secret/url-shortener/
+├── dev/
+│   ├── database/postgres      (DB credentials)
+│   ├── keycloak/config         (OAuth/JWT config)
+│   ├── redis/config            (Redis connection)
+│   ├── pulsar/config           (Message broker)
+│   └── application/config      (App settings)
+└── prod/
+    └── (same structure)
+```
+
+### 2. Automatic Configuration Loading
+
+The application automatically reads secrets from Vault:
+
+1. **Setup Script** (`scripts/setup-vault.sh`): Populates Vault with secrets
+2. **Quarkus Extension**: Reads from configured Vault paths at startup
+3. **Property Override**: Vault values override application.properties
+
+**Important**: Secret keys in Vault must match Quarkus property names exactly!
+
+Example:
+```bash
+# This key in Vault:
+quarkus.datasource.password="mySecretPassword"
+
+# Overrides this property:
+quarkus.datasource.password=<value from properties file>
+```
 
 ## Quick Start
 
