@@ -37,13 +37,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
         securitySchemeName = "bearer-jwt",
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
-        bearerFormat = "JWT",
-        description = "JWT Bearer Token. Just paste your token here (without 'Bearer' prefix - it will be added automatically).\n\n" +
-                      "To get a token:\n" +
-                      "1. POST /api/auth/login with username and password\n" +
-                      "2. Copy the 'accessToken' from response\n" +
-                      "3. Paste it here and click 'Authorize'\n\n" +
-                      "Example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+        bearerFormat = "JWT"
 )
 public class OpenApiConfig extends Application {
     // This class is just for OpenAPI annotations
