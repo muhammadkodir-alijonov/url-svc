@@ -7,11 +7,11 @@ package com.example.config;
  * Configuration is automatically loaded from Vault using Quarkus Vault Config Source
  *
  * Path structure in Vault:
- * - secret/url-shortener/dev/database/postgres
- * - secret/url-shortener/dev/keycloak/config
- * - secret/url-shortener/dev/redis/config
- * - secret/url-shortener/dev/pulsar/config
- * - secret/url-shortener/dev/application/config
+ * - secret/url-shorten/dev/database/postgres
+ * - secret/url-shorten/dev/keycloak/config
+ * - secret/url-shorten/dev/redis/config
+ * - secret/url-shorten/dev/pulsar/config
+ * - secret/url-shorten/dev/application/config
  */
 /*
 import com.example.service.VaultService;
@@ -78,7 +78,7 @@ public class VaultInitializer {
         dbSecrets.put("password", dbPassword);
         dbSecrets.put("host", "localhost");
         dbSecrets.put("port", "30432");
-        dbSecrets.put("database", "url_shortener");
+        dbSecrets.put("database", "url_shorten");
 
         vaultService.storeSecrets("database/postgres", dbSecrets);
         LOG.info("Database secrets stored in Vault");
@@ -87,8 +87,8 @@ public class VaultInitializer {
     private void storeKeycloakSecrets() {
         Map<String, String> keycloakSecrets = new HashMap<>();
         keycloakSecrets.put("server-url", "http://localhost:30180");
-        keycloakSecrets.put("realm", "url-shortener");
-        keycloakSecrets.put("client-id", "url-shortener-client");
+        keycloakSecrets.put("realm", "url-shorten");
+        keycloakSecrets.put("client-id", "url-shorten-client");
         keycloakSecrets.put("admin-username", "admin");
         keycloakSecrets.put("admin-password", "admin");
         keycloakSecrets.put("certs-url", keycloakCertsUrl);

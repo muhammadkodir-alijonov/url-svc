@@ -4,8 +4,8 @@ package com.example.config;
  * NOT NEEDED - Quarkus Vault Config Source automatically maps secrets to properties
  *
  * The Vault Config Source reads from the paths specified in application-dev.properties:
- * - quarkus.vault.secret-config-kv-path.database=secret/url-shortener/dev/database/postgres
- * - quarkus.vault.secret-config-kv-path.keycloak=secret/url-shortener/dev/keycloak/config
+ * - quarkus.vault.secret-config-kv-path.database=secret/url-shorten/dev/database/postgres
+ * - quarkus.vault.secret-config-kv-path.keycloak=secret/url-shorten/dev/keycloak/config
  * - etc.
  *
  * Any key in Vault that matches a Quarkus configuration property name will be automatically loaded.

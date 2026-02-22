@@ -15,7 +15,7 @@ trap pause_before_exit EXIT
 VAULT_ADDR="http://localhost:30200"
 VAULT_TOKEN="dev-root-token"
 VAULT_ADDR_INTERNAL="http://127.0.0.1:8200"  # Vault's internal port inside the pod
-NAMESPACE="url-shortener"
+NAMESPACE="url-shorten"
 
 echo "🔐 Setting up Vault for URL Shortener Service"
 echo "=============================================="
@@ -98,30 +98,30 @@ store_secrets() {
     # Store Database Secrets (with Quarkus property names)
     echo ""
     echo "🗄️  Storing Database secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/database/postgres \
+    vault_exec kv put secret/url-shorten/$ENV/database/postgres \
         quarkus.datasource.username="admin" \
         quarkus.datasource.password="$DB_PASSWORD" \
         host="$DB_HOST" \
         port="$DB_PORT" \
-        database="url_shortener" \
-        quarkus.datasource.jdbc.url="jdbc:postgresql://$DB_HOST:$DB_PORT/url_shortener"
+        database="url_shorten" \
+        quarkus.datasource.jdbc.url="jdbc:postgresql://$DB_HOST:$DB_PORT/url_shorten"
 
     # Store Keycloak Secrets (with Quarkus property names)
     echo ""
     echo "🔑 Storing Keycloak secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/keycloak/config \
-        quarkus.oidc.auth-server-url="$KEYCLOAK_URL/realms/url-shortener" \
-        quarkus.oidc.client-id="url-shortener-client" \
+    vault_exec kv put secret/url-shorten/$ENV/keycloak/config \
+        quarkus.oidc.auth-server-url="$KEYCLOAK_URL/realms/url-shorten" \
+        quarkus.oidc.client-id="url-shorten-client" \
         quarkus.oidc.credentials.secret="**my sec keyyyy**" \
-        mp.jwt.verify.issuer="$KEYCLOAK_URL/realms/url-shortener" \
-        mp.jwt.verify.publickey.location="$KEYCLOAK_URL/realms/url-shortener/protocol/openid-connect/certs" \
+        mp.jwt.verify.issuer="$KEYCLOAK_URL/realms/url-shorten" \
+        mp.jwt.verify.publickey.location="$KEYCLOAK_URL/realms/url-shorten/protocol/openid-connect/certs" \
         admin_username="admin" \
         admin_password="admin"
 
     # Store Redis Secrets (with Quarkus property names)
     echo ""
     echo "📮 Storing Redis secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/redis/config \
+    vault_exec kv put secret/url-shorten/$ENV/redis/config \
         quarkus.redis.hosts="redis://$REDIS_HOST:$REDIS_PORT" \
         host="$REDIS_HOST" \
         port="$REDIS_PORT"
@@ -129,15 +129,15 @@ store_secrets() {
     # Store Pulsar Secrets (with Quarkus property names)
     echo ""
     echo "📡 Storing Pulsar secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/pulsar/config \
+    vault_exec kv put secret/url-shorten/$ENV/pulsar/config \
         quarkus.pulsar.client.serviceUrl="$PULSAR_BROKER" \
         admin_url="$PULSAR_ADMIN" \
-        app.pulsar.topic="url-shortener-clicks"
+        app.pulsar.topic="url-shorten-clicks"
 
     # Store Application Secrets (with proper property names)
     echo ""
     echo "⚙️  Storing Application secrets..."
-    vault_exec kv put secret/url-shortener/$ENV/application/config \
+    vault_exec kv put secret/url-shorten/$ENV/application/config \
         app.base-url="$BASE_URL" \
         app.short-code.length="7" \
         app.short-code.max-attempts="10" \
@@ -161,12 +161,12 @@ store_secrets "dev" \
 
 # Store PROD environment secrets (with production values)
 store_secrets "prod" \
-    "postgres.url-shortener.svc.cluster.local" "5432" "ProductionP@ssw0rd!" \
-    "valkey.url-shortener.svc.cluster.local" "6379" \
-    "http://keycloak.url-shortener.svc.cluster.local:8080" \
-    "pulsar://pulsar.url-shortener.svc.cluster.local:6650" "http://pulsar.url-shortener.svc.cluster.local:8080" \
-    "http://apisix-gateway.url-shortener.svc.cluster.local:9080" \
-    "http://vault.url-shortener.svc.cluster.local:8200" \
+    "postgres.url-shorten.svc.cluster.local" "5432" "ProductionP@ssw0rd!" \
+    "valkey.url-shorten.svc.cluster.local" "6379" \
+    "http://keycloak.url-shorten.svc.cluster.local:8080" \
+    "pulsar://pulsar.url-shorten.svc.cluster.local:6650" "http://pulsar.url-shorten.svc.cluster.local:8080" \
+    "http://apisix-gateway.url-shorten.svc.cluster.local:9080" \
+    "http://vault.url-shorten.svc.cluster.local:8200" \
     "https://short.yourdomain.com"
 
 # Verify secrets
@@ -177,11 +177,11 @@ echo "=============================================="
 
 echo ""
 echo "DEV - Database secrets:"
-vault_exec kv get secret/url-shortener/dev/database/postgres
+vault_exec kv get secret/url-shorten/dev/database/postgres
 
 echo ""
 echo "DEV - Redis secrets:"
-vault_exec kv get secret/url-shortener/dev/redis/config
+vault_exec kv get secret/url-shorten/dev/redis/config
 
 echo ""
 echo "=============================================="
@@ -190,11 +190,11 @@ echo "=============================================="
 
 echo ""
 echo "PROD - Database secrets:"
-vault_exec kv get secret/url-shortener/prod/database/postgres
+vault_exec kv get secret/url-shorten/prod/database/postgres
 
 echo ""
 echo "PROD - Redis secrets:"
-vault_exec kv get secret/url-shortener/prod/redis/config
+vault_exec kv get secret/url-shorten/prod/redis/config
 
 echo ""
 echo "=============================================="
@@ -202,12 +202,12 @@ echo "✅ Vault setup completed successfully!"
 echo ""
 echo "Secrets are organized by environment:"
 echo ""
-echo "  DEV:  secret/url-shortener/dev/<service>/config"
-echo "  PROD: secret/url-shortener/prod/<service>/config"
+echo "  DEV:  secret/url-shorten/dev/<service>/config"
+echo "  PROD: secret/url-shorten/prod/<service>/config"
 echo ""
 echo "Access secrets using:"
-echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/dev/<path>"
-echo "  kubectl exec -n url-shortener $VAULT_POD -- vault kv get secret/url-shortener/prod/<path>"
+echo "  kubectl exec -n url-shorten $VAULT_POD -- vault kv get secret/url-shorten/dev/<path>"
+echo "  kubectl exec -n url-shorten $VAULT_POD -- vault kv get secret/url-shorten/prod/<path>"
 echo ""
 echo "Or via the application using VaultService with environment prefix"
 echo "=============================================="

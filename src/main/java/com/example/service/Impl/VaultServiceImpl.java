@@ -15,7 +15,7 @@ import java.util.Map;
 public class VaultServiceImpl implements VaultService {
 
     private static final Logger LOG = Logger.getLogger(VaultServiceImpl.class);
-    private static final String BASE_PATH = "url-shortener";
+    private static final String BASE_PATH = "url-shorten";
 
     @Inject
     VaultKVSecretEngine kvEngine;

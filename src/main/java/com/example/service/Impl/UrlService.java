@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class UrlService implements IUrlService {
 
     private static final Logger LOG = Logger.getLogger(UrlService.class);
-    private static final String BASE_URL = "https://shortener.by"; // TODO: config
+    private static final String BASE_URL = "https://shorten.by"; // TODO: config
 
     @Inject
     UrlRepository urlRepository;

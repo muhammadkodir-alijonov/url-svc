@@ -304,7 +304,7 @@ public class KeycloakService implements IKeycloakService {
 
     @Override
     public String getAdminToken() throws Exception {
-        String tokenUrl = keycloakUrl.replace("/realms/url-shortener", "/realms/master")
+        String tokenUrl = keycloakUrl.replace("/realms/url-shorten", "/realms/master")
                 + "/protocol/openid-connect/token";
 
         Map<String, String> formData = new HashMap<>();
@@ -338,8 +338,8 @@ public class KeycloakService implements IKeycloakService {
     }
 
     private String createUserInKeycloak(String adminToken, AuthRequest request) throws Exception {
-        String usersUrl = keycloakUrl.replace("/realms/url-shortener", "")
-                + "/admin/realms/url-shortener/users";
+        String usersUrl = keycloakUrl.replace("/realms/url-shorten", "")
+                + "/admin/realms/url-shorten/users";
 
         // Create user with credentials included
         String userJson = String.format("""
@@ -387,8 +387,8 @@ public class KeycloakService implements IKeycloakService {
     }
 
     private void setUserPassword(String adminToken, String userId, String password) throws Exception {
-        String passwordUrl = keycloakUrl.replace("/realms/url-shortener", "")
-                + "/admin/realms/url-shortener/users/" + userId + "/reset-password";
+        String passwordUrl = keycloakUrl.replace("/realms/url-shorten", "")
+                + "/admin/realms/url-shorten/users/" + userId + "/reset-password";
 
         String passwordJson = String.format("""
                 {
@@ -418,8 +418,8 @@ public class KeycloakService implements IKeycloakService {
      * Verify user is fully created and enabled in Keycloak
      */
     private void verifyUserEnabled(String adminToken, String userId) throws Exception {
-        String userUrl = keycloakUrl.replace("/realms/url-shortener", "")
-                + "/admin/realms/url-shortener/users/" + userId;
+        String userUrl = keycloakUrl.replace("/realms/url-shorten", "")
+                + "/admin/realms/url-shorten/users/" + userId;
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(userUrl))
