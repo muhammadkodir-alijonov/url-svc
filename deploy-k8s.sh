@@ -53,6 +53,18 @@ kubectl apply -f infrastructure/kubernetes/apisix-deployment.yaml
 
 echo ""
 echo "================================"
+echo "Step 8: Create Vault Token Secret"
+echo "================================"
+kubectl apply -f infrastructure/kubernetes/vault-token-secret.yaml
+
+echo ""
+echo "================================"
+echo "Step 9: Deploy URL Shortener Service"
+echo "================================"
+kubectl apply -f infrastructure/kubernetes/url-svc-deployment.yaml
+
+echo ""
+echo "================================"
 echo "Waiting for pods to be ready..."
 echo "================================"
 sleep 10
@@ -69,6 +81,7 @@ echo "================================"
 
 echo ""
 echo "Services are exposed via NodePort:"
+echo "   URL Service:      localhost:30080"
 echo "   PostgreSQL:       localhost:30432"
 echo "   Valkey:           localhost:30379"
 echo "   Pulsar:           localhost:30650"
