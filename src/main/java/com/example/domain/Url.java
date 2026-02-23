@@ -25,7 +25,7 @@ public class Url extends PanacheEntityBase {
     @Column(name = "original_url", nullable = false, columnDefinition = "TEXT")
     public String originalUrl;
 
-    @Column(name = "user_id", columnDefinition = "UUID")
+    @Column(name = "user_id", nullable = false, columnDefinition = "UUID")
     public UUID userId;
 
     // Security
