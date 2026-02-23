@@ -43,5 +43,5 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
-# add claud.me
-.claude.me/
+# add claud.me to the .gitignore file to ignore the claud.me directory
+.claud.me/
