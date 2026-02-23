@@ -237,6 +237,12 @@ data:
           file_path: /dev/stderr
         access_log:
           file_path: /dev/stdout
+    authentication:
+      secret: secret
+      expire_time: 3600
+      users:
+        - username: admin
+          password: admin
 ---
 apiVersion: apps/v1
 kind: Deployment
