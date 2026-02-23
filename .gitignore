@@ -44,4 +44,4 @@ nb-configuration.xml
 # TLS Certificates
 .certs/
 # add claud.me
-.claud.me/
+.claude.me/
