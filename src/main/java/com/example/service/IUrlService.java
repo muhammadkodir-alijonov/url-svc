@@ -4,8 +4,6 @@ import com.example.domain.Url;
 import com.example.dto.*;
 import io.smallrye.mutiny.Uni;
 
-import java.util.UUID;
-
 /**
  * Interface for URL shortening operations
  */
