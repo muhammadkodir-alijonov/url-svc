@@ -11,13 +11,10 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @OpenAPIDefinition(
         info = @Info(
-                title = "URL Shortener API",
+                title = "URL Shorten API",
                 version = "1.0.0",
-                description = "REST API for URL shortening service with analytics and QR code generation",
-                license = @License(
-                        name = "MIT",
-                        url = "https://opensource.org/licenses/MIT"
-                )
+                description = "API for URL shortening service",
+                license = @License(name = "MIT License", url = "https://opensource.org/licenses/MIT")
         ),
         servers = {
                 @Server(

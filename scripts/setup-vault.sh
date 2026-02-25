@@ -150,8 +150,9 @@ store_secrets() {
     echo "✅ $ENV secrets stored successfully!"
 }
 
-# Store DEV environment secrets
-store_secrets "dev" \
+
+# Store LOCAL environment secrets (localhost/NodePort)
+store_secrets "local" \
     "localhost" "30432" "admin123" \
     "localhost" "30379" \
     "http://localhost:30180" \
@@ -160,7 +161,17 @@ store_secrets "dev" \
     "http://localhost:30200" \
     "http://localhost:3000"
 
-# Store PROD environment secrets (with production values)
+# Store DEV environment secrets (Kubernetes service names)
+store_secrets "dev" \
+    "postgres.url-shorten.svc.cluster.local" "5432" "admin123" \
+    "valkey.url-shorten.svc.cluster.local" "6379" \
+    "http://keycloak.url-shorten.svc.cluster.local:8080" \
+    "pulsar://pulsar.url-shorten.svc.cluster.local:6650" "http://pulsar.url-shorten.svc.cluster.local:8080" \
+    "http://apisix-gateway.url-shorten.svc.cluster.local:9080" \
+    "http://vault.url-shorten.svc.cluster.local:8200" \
+    "http://dev.url-shorten.local"
+
+# Store PROD environment secrets (production values)
 store_secrets "prod" \
     "postgres.url-shorten.svc.cluster.local" "5432" "ProductionP@ssw0rd!" \
     "valkey.url-shorten.svc.cluster.local" "6379" \
@@ -170,17 +181,27 @@ store_secrets "prod" \
     "http://vault.url-shorten.svc.cluster.local:8200" \
     "https://short.yourdomain.com"
 
-# Verify secrets
+
+# Verify secrets for all environments
+echo ""
+echo "=============================================="
+echo "✅ Verifying LOCAL secrets..."
+echo "=============================================="
+
+echo "LOCAL - Database secrets:"
+vault_exec kv get secret/url-shorten/local/database/postgres
+
+echo "LOCAL - Redis secrets:"
+vault_exec kv get secret/url-shorten/local/redis/config
+
 echo ""
 echo "=============================================="
 echo "✅ Verifying DEV secrets..."
 echo "=============================================="
 
-echo ""
 echo "DEV - Database secrets:"
 vault_exec kv get secret/url-shorten/dev/database/postgres
 
-echo ""
 echo "DEV - Redis secrets:"
 vault_exec kv get secret/url-shorten/dev/redis/config
 
@@ -189,11 +210,9 @@ echo "=============================================="
 echo "✅ Verifying PROD secrets..."
 echo "=============================================="
 
-echo ""
 echo "PROD - Database secrets:"
 vault_exec kv get secret/url-shorten/prod/database/postgres
 
-echo ""
 echo "PROD - Redis secrets:"
 vault_exec kv get secret/url-shorten/prod/redis/config
 
@@ -203,10 +222,12 @@ echo "✅ Vault setup completed successfully!"
 echo ""
 echo "Secrets are organized by environment:"
 echo ""
-echo "  DEV:  secret/url-shorten/dev/<service>/config"
-echo "  PROD: secret/url-shorten/prod/<service>/config"
+echo "  LOCAL: secret/url-shorten/local/<service>/config"
+echo "  DEV:   secret/url-shorten/dev/<service>/config"
+echo "  PROD:  secret/url-shorten/prod/<service>/config"
 echo ""
 echo "Access secrets using:"
+echo "  kubectl exec -n url-shorten $VAULT_POD -- vault kv get secret/url-shorten/local/<path>"
 echo "  kubectl exec -n url-shorten $VAULT_POD -- vault kv get secret/url-shorten/dev/<path>"
 echo "  kubectl exec -n url-shorten $VAULT_POD -- vault kv get secret/url-shorten/prod/<path>"
 echo ""
