@@ -10,28 +10,22 @@ data:
       node_listen: 9080
       enable_admin: true
       enable_admin_cors: true
-      admin_listen:
-        ip: 0.0.0.0
-        port: 9180
-      allow_admin:
-        - 0.0.0.0/0
-      admin_key:
-        - name: "admin"
-          key: admin-api-key
-          role: admin
-    
-    nginx_config:
-      error_log_level: warn
-      http_server_configuration_snippet: |
-        geo $admin_ip_whitelist {
-          default 0;
-          0.0.0.0/0 1;
-        }
     
     deployment:
       role: traditional
       role_traditional:
         config_provider: etcd
+      
+      admin:
+        admin_listen:
+          ip: 0.0.0.0
+          port: 9180
+        allow_admin:
+          - 0.0.0.0/0
+        admin_key:
+          - name: "admin"
+            key: edd1c9f034335f136f87ad84b625c8f1
+            role: admin
       
       etcd:
         host:

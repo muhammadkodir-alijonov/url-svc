@@ -44,7 +44,19 @@ spec:
             # Profile selection
             - name: QUARKUS_PROFILE
               value: "dev"
-            
+
+            # Vault - cluster-internal URL (service name instead of NodePort)
+            - name: QUARKUS_VAULT_URL
+              value: "http://vault:8200"
+
+            # Keycloak - cluster-internal URL
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: "http://keycloak:8080/realms/url-shorten"
+            - name: MP_JWT_VERIFY_ISSUER
+              value: "http://keycloak:8080/realms/url-shorten"
+            - name: MP_JWT_VERIFY_PUBLICKEY_LOCATION
+              value: "http://keycloak:8080/realms/url-shorten/protocol/openid-connect/certs"
+
             # Vault Token from Secret
             - name: VAULT_TOKEN
               valueFrom:
@@ -62,7 +74,7 @@ spec:
           
           livenessProbe:
             httpGet:
-              path: /q/health/live
+              path: /health
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
@@ -71,7 +83,7 @@ spec:
           
           readinessProbe:
             httpGet:
-              path: /q/health/ready
+              path: /health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
