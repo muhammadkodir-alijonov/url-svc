@@ -105,20 +105,30 @@ public class UrlController {
     @GET
     @Path("/{shortCode}/qr")
     @Produces("image/png")
+    @RolesAllowed("user")
+    @SecurityRequirement(name = "bearer-jwt")
     public Response getQRCode(
             @PathParam("shortCode") String shortCode,
-            @QueryParam("size") @DefaultValue("256") int size) {
+            @QueryParam("size") @DefaultValue("MEDIUM") QRCodeSize size,
+            @QueryParam("foreground") @DefaultValue("BLACK") QRCodeColor foreground,
+            @QueryParam("background") @DefaultValue("WHITE") QRCodeColor background) {
 
-        LOG.debugf("Generate QR code: %s (size: %d)", shortCode, size);
+        LOG.debugf("Generate QR code: %s (size: %s, fg: %s, bg: %s)",
+                shortCode, size, foreground, background);
 
-        // Verify URL exists (this will throw exception if not)
-        UrlResponse url = urlService.getUrl(shortCode);
+        // Generate short URL from code (no DB validation - redirect will handle 404)
+        String shortUrl = buildShortUrl(shortCode);
 
-        // Generate QR code
-        byte[] qrCode = qrCodeService.generateQRCode(url.getShortUrl(), size);
+        // Generate QR code with custom colors
+        byte[] qrCode = qrCodeService.generateQRCode(shortUrl, size, foreground, background);
 
         return Response.ok(qrCode)
                 .header("Content-Disposition", "inline; filename=\"" + shortCode + ".png\"")
                 .build();
+    }
+
+    private String buildShortUrl(String shortCode) {
+        // TODO: Get base URL from config
+        return "http://localhost:30900/" + shortCode;
     }
 }

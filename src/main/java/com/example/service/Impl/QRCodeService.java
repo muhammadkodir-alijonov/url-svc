@@ -1,8 +1,11 @@
 package com.example.service.Impl;
 
+import com.example.dto.QRCodeColor;
+import com.example.dto.QRCodeSize;
 import com.example.service.IQRCodeService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -52,5 +55,35 @@ public class QRCodeService implements IQRCodeService {
 
     public byte[] generateQRCode(String url) {
         return generateQRCode(url, DEFAULT_SIZE);
+    }
+
+    @Override
+    public byte[] generateQRCode(String url, QRCodeSize size, QRCodeColor foreground, QRCodeColor background) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(
+                    url,
+                    BarcodeFormat.QR_CODE,
+                    size.getPixels(),
+                    size.getPixels()
+            );
+
+            // Custom colors configuration
+            MatrixToImageConfig config = new MatrixToImageConfig(
+                    foreground.getArgb(),
+                    background.getArgb()
+            );
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream, config);
+
+            LOG.debugf("Generated colored QR code for URL: %s (size: %s, fg: %s, bg: %s)",
+                    url, size, foreground, background);
+            return outputStream.toByteArray();
+
+        } catch (WriterException | IOException e) {
+            LOG.errorf("Failed to generate QR code for URL %s: %s", url, e.getMessage());
+            throw new RuntimeException("QR code generation failed", e);
+        }
     }
 }
