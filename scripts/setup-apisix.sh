@@ -38,178 +38,41 @@ while true; do
     echo "   Still waiting... (${elapsed}s) - Response: $response"
 done
 
-# 1. Create Upstream for URL Service
+# 1. Create Upstream for URL Service (localhost:8080)
 echo ""
 echo "📡 Creating upstream for URL Service..."
-curl -s "${APISIX_ADMIN}/apisix/admin/upstreams/1" \
+curl -s "${APISIX_ADMIN}/apisix/admin/upstreams/10" \
   -H "X-API-KEY: ${API_KEY}" \
   -X PUT -d '{
-  "name": "url-service",
+  "name": "url",
   "type": "roundrobin",
   "nodes": {
     "host.docker.internal:8080": 1
-  },
-  "timeout": {
-    "connect": 6,
-    "send": 6,
-    "read": 6
-  },
-  "checks": {
-    "active": {
-      "type": "http",
-      "http_path": "/q/health/live",
-      "healthy": {
-        "interval": 2,
-        "successes": 2
-      },
-      "unhealthy": {
-        "interval": 1,
-        "http_failures": 2
-      }
-    }
   }
 }' | jq .
 
-# 2. Public Route - Redirect (No Auth)
+# 2. Route for /q/swagger-index (no auth, direct to upstream)
 echo ""
-echo "🔗 Creating redirect route (public)..."
-curl -s "${APISIX_ADMIN}/apisix/admin/routes/1" \
+echo "🔗 Creating /q/swagger-index route..."
+curl -s "${APISIX_ADMIN}/apisix/admin/routes/10" \
   -H "X-API-KEY: ${API_KEY}" \
   -X PUT -d '{
-  "name": "url-redirect",
-  "uri": "/*",
-  "priority": 1,
+  "name": "swagger-index",
+  "uri": "/q/swagger-index",
   "methods": ["GET"],
-  "upstream_id": 1,
-  "plugins": {
-    "limit-req": {
-      "rate": 1000,
-      "burst": 500,
-      "key": "remote_addr",
-      "rejected_code": 429,
-      "rejected_msg": "Too many requests"
-    },
-    "prometheus": {}
-  }
+  "upstream_id": 10
 }' | jq .
 
-# 3. Auth Routes - Login/Register (No JWT)
-echo ""
-echo "🔐 Creating auth routes (public)..."
-curl -s "${APISIX_ADMIN}/apisix/admin/routes/2" \
-  -H "X-API-KEY: ${API_KEY}" \
-  -X PUT -d '{
-  "name": "auth-endpoints",
-  "uris": ["/api/auth/*"],
-  "priority": 10,
-  "methods": ["GET", "POST"],
-  "upstream_id": 1,
-  "plugins": {
-    "limit-req": {
-      "rate": 10,
-      "burst": 5,
-      "key": "remote_addr",
-      "rejected_code": 429
-    },
-    "cors": {
-      "allow_origins": "*",
-      "allow_methods": "GET,POST,OPTIONS",
-      "allow_headers": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
-      "max_age": 3600
-    }
-  }
-}' | jq .
-
-# 4. Protected API Routes (Require JWT)
-echo ""
-echo "🔒 Creating protected API routes (JWT required)..."
-curl -s "${APISIX_ADMIN}/apisix/admin/routes/3" \
-  -H "X-API-KEY: ${API_KEY}" \
-  -X PUT -d '{
-  "name": "url-api-protected",
-  "uri": "/api/urls*",
-  "priority": 20,
-  "methods": ["GET", "POST", "PUT", "DELETE"],
-  "upstream_id": 1,
-  "plugins": {
-    "openid-connect": {
-      "client_id": "url-shorten-client",
-      "client_secret": "**my sec keyyyy**",
-      "discovery": "http://keycloak.url-shorten.svc.cluster.local:8080/realms/url-shorten/.well-known/openid-configuration",
-      "bearer_only": true,
-      "realm": "url-shorten",
-      "introspection_endpoint_auth_method": "client_secret_post"
-    },
-    "limit-req": {
-      "rate": 100,
-      "burst": 50,
-      "key": "consumer_name",
-      "rejected_code": 429
-    },
-    "cors": {
-      "allow_origins": "*",
-      "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "allow_headers": "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
-      "max_age": 3600
-    },
-    "prometheus": {}
-  }
-}' | jq .
-
-# 5. Health Check Routes (Public)
-echo ""
-echo "❤️ Creating health check routes..."
-curl -s "${APISIX_ADMIN}/apisix/admin/routes/4" \
-  -H "X-API-KEY: ${API_KEY}" \
-  -X PUT -d '{
-  "name": "health-checks",
-  "uris": ["/q/*", "/api/health"],
-  "priority": 30,
-  "methods": ["GET"],
-  "upstream_id": 1,
-  "plugins": {
-    "prometheus": {}
-  }
-}' | jq .
-
-# 6. User API Routes (JWT required)
-echo ""
-echo "👤 Creating user API routes..."
-curl -s "${APISIX_ADMIN}/apisix/admin/routes/5" \
-  -H "X-API-KEY: ${API_KEY}" \
-  -X PUT -d '{
-  "name": "user-api",
-  "uri": "/api/users*",
-  "priority": 20,
-  "methods": ["GET", "PUT", "DELETE"],
-  "upstream_id": 1,
-  "plugins": {
-    "openid-connect": {
-      "client_id": "url-shorten-client",
-      "client_secret": "**my sec keyyyy**",
-      "discovery": "http://keycloak.url-shorten.svc.cluster.local:8080/realms/url-shorten/.well-known/openid-configuration",
-      "bearer_only": true,
-      "realm": "url-shorten"
-    },
-    "limit-req": {
-      "rate": 50,
-      "burst": 20,
-      "key": "consumer_name",
-      "rejected_code": 429
-    }
-  }
-}' | jq .
-
-# Verify routes
+# Verify route
 echo ""
 echo "=============================================="
-echo "✅ APISIX Routes Configured!"
+echo "✅ APISIX Route Configured!"
 echo "=============================================="
 
 echo ""
-echo "📋 Configured Routes:"
-curl -s "${APISIX_ADMIN}/apisix/admin/routes" \
-  -H "X-API-KEY: ${API_KEY}" | jq '.list.[] | {id: .value.id, name: .value.name, uri: .value.uri, uris: .value.uris}'
+echo "📋 Configured Route:"
+curl -s "${APISIX_ADMIN}/apisix/admin/routes/10" \
+  -H "X-API-KEY: ${API_KEY}" | jq '{id: .value.id, name: .value.name, uri: .value.uri}'
 
 echo ""
 echo "=============================================="

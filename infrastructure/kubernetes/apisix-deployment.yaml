@@ -74,7 +74,7 @@ spec:
       containers:
         - name: etcd
           image: quay.io/coreos/etcd:v3.5.11
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           command:
             - /usr/local/bin/etcd
             - --data-dir=/etcd-data
