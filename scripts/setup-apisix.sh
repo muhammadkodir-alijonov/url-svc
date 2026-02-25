@@ -1,8 +1,10 @@
 #!/bin/bash
 # Setup APISIX Routes for URL Shortener
 
-APISIX_ADMIN="http://localhost:30901"
-API_KEY="admin-api-key"
+# Use port-forward: kubectl port-forward -n url-shorten <apisix-pod> 9180:9180
+APISIX_ADMIN="http://localhost:9180"
+# APISIX 3.7.0 default admin key (when using etcd mode)
+API_KEY="edd1c9f034335f136f87ad84b625c8f1"
 
 echo "🚀 Configuring APISIX Routes for URL Shortener"
 echo "=============================================="
