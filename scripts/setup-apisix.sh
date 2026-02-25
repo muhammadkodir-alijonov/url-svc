@@ -47,7 +47,7 @@ curl -s "${APISIX_ADMIN}/apisix/admin/upstreams/1" \
   "name": "url-service",
   "type": "roundrobin",
   "nodes": {
-    "url-svc.url-shorten.svc.cluster.local:8080": 1
+    "host.docker.internal:8080": 1
   },
   "timeout": {
     "connect": 6,
